@@ -1,39 +1,63 @@
-let heading = document.getElementById("heading");
-heading.innerText = heading.innerText + " from Ambuj Tiwari";
+let userScore = 0;
+let compScore = 0;
 
-let boxes = document.getElementsByClassName("box");
+const choices = document.querySelectorAll(".choice");
+const msg = document.querySelector("#msg");
 
-boxes[0].innerText = "This is Box 1";
-boxes[1].innerText = "This is Box 2";
-boxes[2].innerText = "This is Box 3";
+const userScorePara = document.querySelector("#user-score");
+const compScorePara = document.querySelector("#comp-score");
 
+const genCompChoice = () => {
+  const options = ["rock", "paper", "scissors"];
+  const randIdx = Math.floor(Math.random() * 3);
+  return options[randIdx];
+};
 
-// create button
-let btn = document.createElement("button");
+const drawGame = () => {
+  msg.innerText = "Game was Draw. Play again.";
+  msg.style.backgroundColor = "#081b31";
+};
 
-// add text
-btn.innerText = "click me";
-
-// add styles
-btn.style.backgroundColor = "red";
-btn.style.color = "white";
-
-// insert as first element in body
-document.body.prepend(btn);
-
-let para = document.querySelector(".para");
-para.classList.add("newClass");
-
-let btn = document.getElementById("toggleBtn");
-
-btn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-
-  if (document.body.classList.contains("dark-mode")) {
-    btn.innerText = "Enable Light Mode";
+const showWinner = (userWin, userChoice, compChoice) => {
+  if (userWin) {
+    userScore++;
+    userScorePara.innerText = userScore;
+    msg.innerText = `You win! Your ${userChoice} beats ${compChoice}`;
+    msg.style.backgroundColor = "green";
   } else {
-    btn.innerText = "Enable Dark Mode";
+    compScore++;
+    compScorePara.innerText = compScore;
+    msg.innerText = `You lost. ${compChoice} beats your ${userChoice}`;
+    msg.style.backgroundColor = "red";
   }
+};
+
+const playGame = (userChoice) => {
+  //Generate computer choice
+  const compChoice = genCompChoice();
+
+  if (userChoice === compChoice) {
+    //Draw Game
+    drawGame();
+  } else {
+    let userWin = true;
+    if (userChoice === "rock") {
+      //scissors, paper
+      userWin = compChoice === "paper" ? false : true;
+    } else if (userChoice === "paper") {
+      //rock, scissors
+      userWin = compChoice === "scissors" ? false : true;
+    } else {
+      //rock, paper
+      userWin = compChoice === "rock" ? false : true;
+    }
+    showWinner(userWin, userChoice, compChoice);
+  }
+};
+
+choices.forEach((choice) => {
+  choice.addEventListener("click", () => {
+    const userChoice = choice.getAttribute("id");
+    playGame(userChoice);
+  });
 });
-
-
