@@ -1,0 +1,19 @@
+# Day 20 – Node.js & Backend Basics
+
+## Topics Covered
+- What is Backend Development
+- Frontend vs Backend
+- Introduction to Node.js
+- How Server Works
+- HTTP Request & Response
+- Simple Node.js Server
+
+## Technology Used
+- JavaScript
+- Node.js
+
+## Learning Outcome
+Understood how backend works and created my first Node.js server.
+
+## Next Step
+Learning Express.js framework.
