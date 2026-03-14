@@ -1,0 +1,129 @@
+express-project
+│
+├── controllers
+│
+├── routes
+│
+├── middleware
+│
+├── models
+│
+├── public
+│
+├── views
+│
+└── server.js
+
+// without express 
+const http = require("http");
+
+const server = http.createServer((req,res)=>{
+    res.end("Hello World");
+});
+
+server.listen(3000);
+
+// with express 
+
+const express = require("express");
+
+const app = express();
+
+app.get("/",(req,res)=>{
+    res.send("Hello World");
+});
+
+app.listen(3000);
+
+// complete express.js code 
+
+const express = require("express");
+
+const app = express();
+
+const PORT = 3000;
+
+/* Built-in Middleware for Form Data */
+app.use(express.urlencoded({extended:true}));
+
+/* Middleware 1: Log Request Path */
+app.use((req,res,next)=>{
+ console.log("Request Path:",req.path);
+ next();
+});
+
+/* Middleware 2: Log Request Method */
+app.use((req,res,next)=>{
+ console.log("Request Method:",req.method);
+ next();
+});
+
+/* Home Route */
+app.use("/",(req,res,next)=>{
+ if(req.path === "/"){
+  res.send("<h1>Welcome to Home Page</h1>");
+ }else{
+  next();
+ }
+});
+
+/* GET Contact Page */
+app.use("/contact-us",(req,res,next)=>{
+
+ if(req.method === "GET"){
+
+  res.send(`
+  <h1>Contact Us</h1>
+
+  <form action="/contact-us" method="POST">
+
+  <input type="text" name="name" placeholder="Enter Name"/>
+
+  <br><br>
+
+  <input type="email" name="email" placeholder="Enter Email"/>
+
+  <br><br>
+
+  <button type="submit">Submit</button>
+
+  </form>
+  `);
+
+ }else{
+  next();
+ }
+
+});
+
+/* POST Contact Form */
+app.use("/contact-us",(req,res)=>{
+
+ if(req.method === "POST"){
+
+  const name = req.body.name;
+  const email = req.body.email;
+
+  console.log("User Data:",name,email);
+
+  res.send(`
+  <h2>Form Submitted Successfully</h2>
+
+  <p>Name: ${name}</p>
+
+  <p>Email: ${email}</p>
+  `);
+
+ }
+
+});
+
+/* 404 Middleware */
+app.use((req,res)=>{
+ res.status(404).send("Page Not Found");
+});
+
+/* Start Server */
+app.listen(PORT,()=>{
+ console.log(`Server running at http://localhost:${PORT}`);
+});
