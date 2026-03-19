@@ -1,0 +1,231 @@
+# 📘 Day 8 - Express.js Deep Dive
+
+This module covers advanced concepts of Express.js including request parsing, routing, handling errors, and serving HTML files.
+
+---
+
+## 📌 Topics Covered
+
+* Parsing Requests
+* Express Router
+* Adding 404 Page
+* Common Paths
+* Adding HTML Files
+* Serving HTML Files
+* Using File Helper
+
+---
+
+# 1️⃣ Parsing Requests
+
+## 🔹 Explanation
+
+Parsing requests means extracting data from:
+
+* URL params
+* Query params
+* Request body
+
+## 🔹 Code
+
+```js
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// URL PARAM
+app.get('/user/:id', (req, res) => {
+    res.send(`User ID: ${req.params.id}`);
+});
+
+// QUERY PARAM
+app.get('/search', (req, res) => {
+    res.send(`Search Query: ${req.query.name}`);
+});
+
+// BODY
+app.post('/data', (req, res) => {
+    res.send(`Received: ${req.body.name}`);
+});
+
+app.listen(3000);
+```
+
+---
+
+# 2️⃣ Express Router
+
+## 🔹 Explanation
+
+Router helps organize routes in separate files.
+
+## 🔹 Code
+
+### routes/user.js
+
+```js
+const express = require('express');
+const router = express.Router();
+
+router.get('/', (req, res) => {
+    res.send('User Home');
+});
+
+router.get('/profile', (req, res) => {
+    res.send('User Profile');
+});
+
+module.exports = router;
+```
+
+### app.js
+
+```js
+const express = require('express');
+const app = express();
+
+const userRoutes = require('./routes/user');
+
+app.use('/user', userRoutes);
+
+app.listen(3000);
+```
+
+---
+
+# 3️⃣ Adding 404 Page
+
+## 🔹 Explanation
+
+Handles unknown routes.
+
+## 🔹 Code
+
+```js
+app.use((req, res) => {
+    res.status(404).send('Page Not Found');
+});
+```
+
+---
+
+# 4️⃣ Common Paths
+
+## 🔹 Explanation
+
+Handling file paths using Node.js path module.
+
+## 🔹 Code
+
+```js
+const path = require('path');
+
+const filePath = path.join(__dirname, 'views', 'index.html');
+console.log(filePath);
+```
+
+---
+
+# 5️⃣ Adding HTML Files
+
+Create a folder:
+
+```bash
+views/index.html
+```
+
+## 🔹 HTML Example
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome to Express App</h1>
+</body>
+</html>
+```
+
+---
+
+# 6️⃣ Serving HTML Files
+
+## 🔹 Code
+
+```js
+const path = require('path');
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+```
+
+---
+
+# 7️⃣ Using File Helper (Advanced)
+
+## 🔹 fileHelper.js
+
+```js
+const path = require('path');
+
+module.exports = path.dirname(require.main.filename);
+```
+
+## 🔹 Usage
+
+```js
+const rootDir = require('./utils/fileHelper');
+
+res.sendFile(path.join(rootDir, 'views', 'index.html'));
+```
+
+---
+
+# 🧠 Real-Life Example
+
+* Login form → Parsing request body
+* Dashboard routes → Router
+* Invalid URL → 404 page
+* Serving UI → HTML files
+
+---
+
+# 📁 Folder Structure
+
+```
+project
+│
+├── routes
+│     └── user.js
+│
+├── views
+│     └── index.html
+│
+├── utils
+│     └── fileHelper.js
+│
+├── app.js
+└── package.json
+```
+
+---
+
+# ✅ Conclusion
+
+This module teaches:
+
+* How backend handles client requests
+* How to organize scalable Express apps
+* How to serve frontend from backend
+
+---
+
+# 👨‍💻 Author
+
+Ambuj Tiwari
+Full Stack Intern 🚀
