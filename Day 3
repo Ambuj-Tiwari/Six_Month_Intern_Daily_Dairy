@@ -1,0 +1,69 @@
+
+CSS Box Model & Layout
+Today's Focus: Margin, Padding, Border, and Display Properties
+What I Learned:
+
+Box Model: content, padding, border, margin
+
+display property: block, inline, inline-block
+
+Centering elements: margin: 0 auto
+
+Border styles and radius
+
+Practice Exercise: Create profile cards
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .card {
+            width: 300px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #2ecc71;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="https://via.placeholder.com/100" class="profile-img" alt="Profile">
+        <h2>John Doe</h2>
+        <p>Full Stack Developer</p>
+        <p>Learning HTML, CSS, JavaScript</p>
+        <a href="#" class="btn">View Profile</a>
+    </div>
+</body>
+</html>
+
+Practice Question:
+Create three product cards in a row with:
+
+Image placeholder (200x150)
+
+Product name and price
+
+"Add to Cart" button
+
+15px padding, 1px gray border
+
+20px margin between cards
