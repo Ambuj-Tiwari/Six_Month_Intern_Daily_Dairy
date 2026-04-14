@@ -1,0 +1,44 @@
+ Introduction to Web Development, Setup, and HTML Basics
+What I Learned:
+
+How websites work: client, server, HTTP/HTTPS
+
+Basic structure of HTML: <html>, <head>, <body>
+
+Common tags: <h1>, <p>, <a>, <img>, <ul>, <li>
+
+Setting up VS Code with Live Server extension
+
+Practice Exercise: Create a personal introduction page
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Webpage</title>
+</head>
+<body>
+    <h1>Welcome to My Learning Journey</h1>
+    <p>Hello! I'm starting my Full Stack Web Development journey today.</p>
+    <h2>My Goals:</h2>
+    <ul>
+        <li>Learn HTML, CSS, JavaScript</li>
+        <li>Build responsive websites</li>
+        <li>Master backend development</li>
+    </ul>
+    <p>Connect with me: <a href="#">Coming Soon</a></p>
+</body>
+</html>
+
+Source Code Practice Question:
+Create an HTML page about your favorite hobby with:
+
+A main heading
+
+Three sub-sections
+
+An ordered list of tools needed
+
+An image placeholder
+
+A contact form skeleton
+
