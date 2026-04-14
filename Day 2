@@ -1,0 +1,62 @@
+ HTML Deep Dive & CSS Introduction
+Today's Focus: HTML5 Semantic Elements and CSS Basics
+What I Learned: 
+Semantic tags: <header>, <nav>, <main>, <section>, <article>, <footer>
+
+CSS syntax: selectors, properties, values
+
+Inline vs Internal vs External CSS
+
+Basic styling: color, font-family, background-color
+
+Practice Exercise: Create a blog layout with semantic HTML and basic styling
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; margin: 0; }
+        header { background: #333; color: white; padding: 20px; }
+        nav a { color: white; margin-right: 15px; }
+        article { padding: 20px; border-bottom: 1px solid #ddd; }
+        footer { background: #f1f1f1; padding: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Tech Blog</h1>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+    
+    <main>
+        <article>
+            <h2>Day 2 of Learning CSS</h2>
+            <p>Today I learned about selectors and basic styling...</p>
+        </article>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 My Learning Diary</p>
+    </footer>
+</body>
+</html>
+
+
+Practice Question:
+Build a recipe page with:
+
+Semantic HTML structure
+
+Ingredients as unordered list (styled with square bullets)
+
+Instructions as ordered list
+
+Different background colors for header and footer
+
+All text in "Georgia" font
+
+
