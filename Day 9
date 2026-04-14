@@ -1,0 +1,41 @@
+ DOM Manipulation Basics
+
+Today's Focus: Document Object Model, Selecting Elements, Changing Content
+What I Learned: DOM is a tree structure of HTML elements, accessed via JavaScript. Learned:
+
+getElementById() – select single element by ID
+
+getElementsByClassName() – select multiple elements by class
+
+querySelector() – CSS selector for single element
+
+querySelectorAll() – CSS selector for multiple elements
+
+Changing content: innerHTML, textContent, innerText
+
+Changing styles: style.property
+
+Changing attributes: setAttribute(), getAttribute()
+
+Practice Example: Theme Switcher
+
+<button id="themeBtn">Dark Mode</button>
+<div id="content">Hello World</div>
+
+<script>
+document.getElementById('themeBtn').addEventListener('click', function() {
+    let content = document.getElementById('content');
+    content.style.backgroundColor = '#333';
+    content.style.color = 'white';
+    this.textContent = 'Light Mode';
+});
+</script>
+
+Practice Questions:
+
+Create page with heading and button that changes heading text when clicked
+
+Make color picker that changes background color of page
+
+Build show/hide password functionality in form
+

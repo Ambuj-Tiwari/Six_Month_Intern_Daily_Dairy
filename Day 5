@@ -1,0 +1,111 @@
+ CSS Grid
+Today's Focus: Grid Layout System
+What I Learned:
+
+display: grid and grid containers
+
+grid-template-columns, grid-template-rows
+
+grid-gap (now gap)
+
+Grid areas and responsive grid layouts
+
+Practice Exercise: Dashboard layout
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            grid-template-rows: 80px 1fr 60px;
+            height: 100vh;
+            grid-template-areas:
+                "sidebar header"
+                "sidebar main"
+                "sidebar footer";
+        }
+        .header {
+            grid-area: header;
+            background: #3498db;
+            padding: 20px;
+            color: white;
+        }
+        .sidebar {
+            grid-area: sidebar;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+        .main {
+            grid-area: main;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .footer {
+            grid-area: footer;
+            background: #ecf0f1;
+            text-align: center;
+            padding: 15px;
+        }
+        .widget {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "sidebar"
+                    "main"
+                    "footer";
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <h1>Admin Dashboard</h1>
+        </header>
+        <aside class="sidebar">
+            <h3>Menu</h3>
+            <ul>
+                <li>Dashboard</li>
+                <li>Users</li>
+                <li>Settings</li>
+                <li>Reports</li>
+            </ul>
+        </aside>
+        <main class="main">
+            <div class="widget">Active Users: 150</div>
+            <div class="widget">Revenue: $5,200</div>
+            <div class="widget">Tasks: 12/15</div>
+            <div class="widget">Server Load: 78%</div>
+        </main>
+        <footer class="footer">
+            <p>&copy; 2025 Dashboard. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
+
+Practice Question:
+Create a photo gallery with CSS Grid:
+
+4 columns on desktop, 2 on tablet, 1 on mobile
+
+Use grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
+
+Add hover effect to scale images
+
+Create a masonry layout with grid-auto-rows: 150px
+
+Implement a modal that opens on image click (JavaScript later)

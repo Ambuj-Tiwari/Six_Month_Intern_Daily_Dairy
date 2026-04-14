@@ -1,0 +1,195 @@
+ JavaScript Arrays & Loops
+Today's Focus: Arrays, for/while loops, array methods
+What I Learned:
+
+Array creation and access
+
+for, while, do-while loops
+
+Array methods: push, pop, shift, unshift, splice
+
+for...of and for...in loops
+Practice Exercise: Array manipulation
+// Practice file: day8.js
+console.log("=== Day 8: Arrays & Loops ===");
+
+// 1. Basic Array Operations
+let fruits = ["apple", "banana", "orange"];
+console.log("Original array:", fruits);
+
+// Adding elements
+fruits.push("mango"); // end
+fruits.unshift("grape"); // beginning
+console.log("After adding:", fruits);
+
+// Removing elements
+fruits.pop(); // remove last
+fruits.shift(); // remove first
+console.log("After removing:", fruits);
+
+// 2. Looping through arrays
+console.log("\n=== For Loop ===");
+for (let i = 0; i < fruits.length; i++) {
+    console.log(`Fruit ${i+1}: ${fruits[i]}`);
+}
+
+console.log("\n=== For...of Loop ===");
+for (let fruit of fruits) {
+    console.log(fruit.toUpperCase());
+}
+
+// 3. Array Methods
+let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// map - transform each element
+let squared = numbers.map(num => num * num);
+console.log("\nSquared numbers:", squared);
+
+// filter - select elements
+let evenNumbers = numbers.filter(num => num % 2 === 0);
+console.log("Even numbers:", evenNumbers);
+
+// reduce - accumulate values
+let sum = numbers.reduce((total, num) => total + num, 0);
+console.log("Sum of numbers:", sum);
+
+// 4. Practical Example: Student Marks
+let students = [
+    { name: "Alice", marks: 85 },
+    { name: "Bob", marks: 72 },
+    { name: "Charlie", marks: 90 },
+    { name: "Diana", marks: 68 }
+];
+
+// Find students with marks > 75
+let topStudents = students.filter(student => student.marks > 75);
+console.log("\nTop Students:", topStudents);
+
+// Calculate average marks
+let totalMarks = students.reduce((sum, student) => sum + student.marks, 0);
+let averageMarks = totalMarks / students.length;
+console.log(`Average Marks: ${averageMarks.toFixed(2)}`);
+
+// 5. While Loop Example
+console.log("\n=== While Loop ===");
+let counter = 1;
+while (counter <= 5) {
+    console.log(`Count: ${counter}`);
+    counter++;
+}
+
+// 6. Do-While Loop
+console.log("\n=== Do-While Loop ===");
+let password = "";
+do {
+    password = prompt("Enter password (min 6 characters):");
+} while (password.length < 6);
+console.log("Password accepted!");
+
+
+HTML Practice Project: To-Do List
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: 0 auto; }
+        #todoInput { width: 70%; padding: 10px; }
+        button { padding: 10px 20px; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border: 1px solid #ddd; margin: 5px 0; 
+             display: flex; justify-content: space-between; }
+        .completed { text-decoration: line-through; color: #888; }
+    </style>
+</head>
+<body>
+    <h2>Simple To-Do List</h2>
+    <input type="text" id="todoInput" placeholder="Add new task...">
+    <button onclick="addTodo()">Add</button>
+    <button onclick="clearCompleted()">Clear Completed</button>
+    
+    <ul id="todoList"></ul>
+    
+    <script>
+        let todos = [];
+        
+        function addTodo() {
+            let input = document.getElementById('todoInput');
+            if (input.value.trim() === "") return;
+            
+            todos.push({
+                id: Date.now(),
+                text: input.value,
+                completed: false
+            });
+            
+            input.value = "";
+            renderTodos();
+        }
+        
+        function toggleTodo(id) {
+            todos = todos.map(todo => 
+                todo.id === id ? {...todo, completed: !todo.completed} : todo
+            );
+            renderTodos();
+        }
+        
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            renderTodos();
+        }
+        
+        function clearCompleted() {
+            todos = todos.filter(todo => !todo.completed);
+            renderTodos();
+        }
+        
+        function renderTodos() {
+            let list = document.getElementById('todoList');
+            list.innerHTML = "";
+            
+            todos.forEach(todo => {
+                let li = document.createElement('li');
+                li.className = todo.completed ? 'completed' : '';
+                li.innerHTML = `
+                    <span onclick="toggleTodo(${todo.id})">${todo.text}</span>
+                    <button onclick="deleteTodo(${todo.id})">Delete</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
+
+Practice Questions:
+
+Create functions that:
+
+Reverse an array without using reverse()
+
+Find the maximum number in an array
+
+Remove duplicates from an array
+
+Merge two sorted arrays into one sorted array
+
+Build a shopping cart with:
+
+Add item, remove item, update quantity
+
+Calculate total price
+
+Apply discount codes
+
+Show cart summary
+
+Create a student management system:
+
+Add/remove students
+
+Calculate class average
+
+Find top 3 students
+
+Filter by grade

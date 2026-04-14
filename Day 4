@@ -1,0 +1,94 @@
+CSS Flexbox
+Today's Focus: Flexbox Layout System
+What I Learned:
+
+display: flex and flex containers
+
+justify-content, align-items, flex-direction
+
+flex-wrap and gap property
+
+Responsive navigation bar using flexbox
+
+Practice Exercise: Responsive navbar and gallery
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2c3e50;
+            padding: 15px 30px;
+            color: white;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .nav-links a:hover {
+            background: #34495e;
+        }
+        
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px;
+            justify-content: center;
+        }
+        .gallery-item {
+            width: 200px;
+            height: 150px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h2>MyWebsite</h2>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+    
+    <div class="gallery">
+        <div class="gallery-item">Project 1</div>
+        <div class="gallery-item">Project 2</div>
+        <div class="gallery-item">Project 3</div>
+        <div class="gallery-item">Project 4</div>
+        <div class="gallery-item">Project 5</div>
+    </div>
+</body>
+</html>
+
+Practice Question:
+Create a pricing table with 3 columns using flexbox:
+
+Each column should have equal width
+
+Center content vertically and horizontally
+
+Add a "Most Popular" badge on middle column
+
+Make it responsive (stack vertically on mobile)
+
+Use gap: 30px between columns
+
+

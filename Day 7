@@ -1,0 +1,151 @@
+JavaScript Functions & Conditionals
+Today's Focus: Functions, if-else, switch, ternary operator
+What I Learned:
+
+Function declaration vs expression vs arrow functions
+
+if, else if, else statements
+
+switch case for multiple conditions
+
+Ternary operator: condition ? true : false
+
+Practice Exercise: Practical functions
+// Practice file: day7.js
+console.log("=== Day 7: Functions & Conditionals ===");
+
+// 1. Function Declaration
+function greetUser(name, timeOfDay) {
+    return `Good ${timeOfDay}, ${name}!`;
+}
+console.log(greetUser("Priya", "morning"));
+
+// 2. Function Expression
+const calculateDiscount = function(price, discountPercent) {
+    let discount = price * (discountPercent / 100);
+    return price - discount;
+};
+console.log(`Final price: ₹${calculateDiscount(2000, 15)}`);
+
+// 3. Arrow Function (ES6)
+const isEligibleToVote = (age) => {
+    return age >= 18 ? "Yes, can vote" : "No, cannot vote";
+};
+console.log(`Age 20: ${isEligibleToVote(20)}`);
+console.log(`Age 16: ${isEligibleToVote(16)}`);
+
+// 4. If-Else Example
+function getGrade(score) {
+    if (score >= 90) {
+        return "A";
+    } else if (score >= 80) {
+        return "B";
+    } else if (score >= 70) {
+        return "C";
+    } else if (score >= 60) {
+        return "D";
+    } else {
+        return "F";
+    }
+}
+console.log(`Score 85 gets: ${getGrade(85)}`);
+
+// 5. Switch Case
+function getDayName(dayNumber) {
+    switch(dayNumber) {
+        case 1: return "Monday";
+        case 2: return "Tuesday";
+        case 3: return "Wednesday";
+        case 4: return "Thursday";
+        case 5: return "Friday";
+        case 6: return "Saturday";
+        case 7: return "Sunday";
+        default: return "Invalid day";
+    }
+}
+console.log(`Day 3: ${getDayName(3)}`);
+
+// 6. Practical Example: Login System
+function checkLogin(username, password) {
+    const validUsername = "admin";
+    const validPassword = "12345";
+    
+    if (username === validUsername && password === validPassword) {
+        return "Login successful!";
+    } else if (username !== validUsername) {
+        return "Username not found";
+    } else {
+        return "Incorrect password";
+    }
+}
+console.log(checkLogin("admin", "12345"));
+console.log(checkLogin("user", "12345"));
+
+HTML Integration Practice:
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        // Simple calculator in HTML
+        function calculate() {
+            let num1 = parseFloat(document.getElementById('num1').value);
+            let num2 = parseFloat(document.getElementById('num2').value);
+            let operation = document.getElementById('operation').value;
+            let result;
+            
+            switch(operation) {
+                case 'add': result = num1 + num2; break;
+                case 'subtract': result = num1 - num2; break;
+                case 'multiply': result = num1 * num2; break;
+                case 'divide': result = num1 / num2; break;
+                default: result = "Invalid operation";
+            }
+            
+            document.getElementById('result').innerHTML = `Result: ${result}`;
+        }
+    </script>
+</head>
+<body>
+    <h2>Simple Calculator</h2>
+    <input type="number" id="num1" placeholder="Enter first number">
+    <select id="operation">
+        <option value="add">+</option>
+        <option value="subtract">-</option>
+        <option value="multiply">×</option>
+        <option value="divide">÷</option>
+    </select>
+    <input type="number" id="num2" placeholder="Enter second number">
+    <button onclick="calculate()">Calculate</button>
+    <p id="result"></p>
+</body>
+</html>
+
+Practice Questions:
+
+Create a function that:
+
+Takes temperature in Celsius, returns Fahrenheit
+
+Takes a number, returns if it's positive, negative, or zero
+
+Takes marks of 5 subjects, returns percentage and grade
+
+Build a BMI calculator with categories:
+
+Underweight: < 18.5
+
+Normal: 18.5-24.9
+
+Overweight: 25-29.9
+
+Obese: >= 30
+
+Create an electricity bill calculator:
+
+First 100 units: ₹5/unit
+
+Next 200 units: ₹7/unit
+
+Above 300 units: ₹10/unit
+
+

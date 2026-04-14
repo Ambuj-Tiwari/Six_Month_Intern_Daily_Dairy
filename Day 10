@@ -1,0 +1,44 @@
+DOM Events & Forms
+
+Today's Focus: Event Listeners, Form Handling, Event Types
+What I Learned: How to respond to user actions. Learned:
+
+addEventListener() method
+
+Common events: click, submit, change, input, keyup, mouseover
+
+Form validation basics
+
+preventDefault() to stop form submission
+
+event.target to identify clicked element
+
+Practice Example: Form Validation
+<form id="signupForm">
+    <input type="email" id="email" placeholder="Email">
+    <span id="emailError" style="color:red"></span>
+    <button type="submit">Sign Up</button>
+</form>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+    let email = document.getElementById('email').value;
+    let error = document.getElementById('emailError');
+    
+    if (!email.includes('@')) {
+        error.textContent = 'Invalid email';
+        e.preventDefault();
+    } else {
+        error.textContent = '';
+    }
+});
+</script>
+
+Practice Questions:
+
+Create counter with increment/decrement buttons
+
+Build image gallery with next/previous buttons
+
+Make real-time character counter for textarea
+

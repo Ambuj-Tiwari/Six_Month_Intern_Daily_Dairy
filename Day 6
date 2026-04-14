@@ -1,0 +1,80 @@
+JavaScript Fundamentals I
+Today's Focus: Variables, Data Types, Operators
+What I Learned:
+
+let, const, var differences
+
+Primitive types: string, number, boolean, null, undefined
+
+Arithmetic, assignment, comparison operators
+
+Template literals (backticks)
+
+Practice Exercise: Variable manipulation and calculations
+// Practice file: day6.js
+console.log("=== Day 6: JavaScript Basics ===");
+
+// 1. Variable Declaration
+let userName = "Rahul";
+const BIRTH_YEAR = 1998;
+var oldSchool = "Avoid using var";
+
+console.log(`Name: ${userName}`);
+console.log(`Birth Year: ${BIRTH_YEAR}`);
+
+// 2. Type Conversion
+let score = "85";
+let convertedScore = Number(score);
+console.log(`Original: ${score}, Type: ${typeof score}`);
+console.log(`Converted: ${convertedScore}, Type: ${typeof convertedScore}`);
+
+// 3. Mathematical Operations
+let num1 = 15;
+let num2 = 4;
+
+console.log(`Addition: ${num1 + num2}`);
+console.log(`Subtraction: ${num1 - num2}`);
+console.log(`Multiplication: ${num1 * num2}`);
+console.log(`Division: ${num1 / num2}`);
+console.log(`Modulus: ${num1 % num2}`);
+console.log(`Exponent: ${num1 ** 2}`);
+
+// 4. Comparison Operators
+let age = 25;
+console.log(`Is adult? ${age >= 18}`);
+console.log(`Exactly 25? ${age === 25}`);
+console.log(`Not 30? ${age !== 30}`);
+
+// 5. Practice Problem: Calculate BMI
+let weight = 70; // kg
+let height = 1.75; // meters
+let bmi = weight / (height * height);
+console.log(`Weight: ${weight}kg, Height: ${height}m`);
+console.log(`BMI: ${bmi.toFixed(2)}`);
+
+
+Practice Questions:
+
+Create variables for:
+
+Your name (string)
+
+Your age (number)
+
+Is student? (boolean)
+
+Skills (array - we'll learn tomorrow)
+
+Calculate:
+
+Area of circle (πr²)
+
+Celsius to Fahrenheit (F = C × 9/5 + 32)
+
+Total price with 18% GST
+
+Compare:
+
+Check if number is even
+
+Check if string contains "@" (email validation start)
