@@ -1,0 +1,51 @@
+Firestore CRUD Operations
+
+Today's Focus: Database Operations, Real-time Updates
+What I Learned: Working with Firestore database. Learned:
+
+Creating collections and documents
+
+Adding data (Create)
+
+Reading data (Read)
+
+Updating documents (Update)
+
+Deleting documents (Delete)
+
+Real-time listeners
+
+Practice Example: Todo with Firestore
+
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from './firebase';
+
+// Add todo
+const addTodo = async (todoText) => {
+    await addDoc(collection(db, "todos"), {
+        text: todoText,
+        completed: false,
+        createdAt: new Date()
+    });
+};
+
+// Get todos
+const getTodos = async () => {
+    const querySnapshot = await getDocs(collection(db, "todos"));
+    return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+};
+
+// Delete todo
+const deleteTodo = async (id) => {
+    await deleteDoc(doc(db, "todos", id));
+};
+Practice Questions:
+
+Build notes app with Firestore
+
+Create blog with post management
+
+Make task tracker with real-time updates
