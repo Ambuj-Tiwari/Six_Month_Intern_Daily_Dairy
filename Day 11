@@ -1,0 +1,39 @@
+Day 11 – ES6+ Modern JavaScript
+
+Today's Focus: Arrow Functions, Template Literals, Destructuring
+What I Learned: Modern JavaScript features for cleaner code. Learned:
+
+Arrow functions syntax: () => {}
+
+Template literals with ${variables}
+
+Destructuring arrays and objects
+
+Spread operator ...
+
+Default parameters
+
+Import/export modules
+
+Practice Example: Modern Syntax
+// Arrow function
+const multiply = (a, b) => a * b;
+
+// Template literal
+const greet = name => `Hello, ${name}!`;
+
+// Destructuring
+const user = {name: 'John', age: 25};
+const {name, age} = user;
+
+// Spread operator
+const arr1 = [1, 2, 3];
+const arr2 = [...arr1, 4, 5];
+
+Practice Questions:
+
+Convert all regular functions to arrow functions
+
+Use template literals for dynamic HTML generation
+
+Destructure data from API response object

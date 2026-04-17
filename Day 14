@@ -1,0 +1,43 @@
+Git & GitHub Fundamentals
+
+Today's Focus: Version Control, Git Commands, GitHub Workflow
+What I Learned: Tracking code changes and collaboration. Learned:
+
+git init – initialize repository
+
+git add – stage changes
+
+git commit – save changes
+
+git push – upload to GitHub
+
+git pull – download from GitHub
+
+Branches and merging
+
+Pull requests
+
+Practice Example: Daily Workflow
+
+# Start new feature
+git checkout -b feature/login-page
+
+# Make changes and commit
+git add .
+git commit -m "Add login form with validation"
+
+# Push to GitHub
+git push origin feature/login-page
+
+# Create pull request on GitHub website
+Practice Questions:
+
+Initialize repo for your portfolio website
+
+Create and merge feature branch
+
+Resolve merge conflict
+
+Contribute to open source via fork and PR
+
+

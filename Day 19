@@ -1,0 +1,56 @@
+ React Forms & Events
+
+Today's Focus: Form Handling, Controlled Components
+What I Learned: Handling user input in React forms. Learned:
+
+Controlled vs uncontrolled components
+
+Form submission
+
+Handling multiple inputs
+
+Input validation
+
+Form events: onChange, onSubmit
+
+Practice Example: Registration Form
+function RegistrationForm() {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: ''
+    });
+    
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+    
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Form submitted:', formData);
+    };
+    
+    return (
+        <form onSubmit={handleSubmit}>
+            <input name="name" value={formData.name} onChange={handleChange} />
+            <input name="email" value={formData.email} onChange={handleChange} />
+            <input name="password" type="password" value={formData.password} onChange={handleChange} />
+            <button type="submit">Register</button>
+        </form>
+    );
+}
+
+
+
+Practice Questions:
+
+Create login form with validation
+
+Build contact form with email validation
+
+Make survey form with multiple question types
+
+

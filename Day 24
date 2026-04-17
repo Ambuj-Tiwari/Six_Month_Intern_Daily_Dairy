@@ -1,0 +1,41 @@
+ Firebase Introduction
+
+Today's Focus: Backend-as-a-Service, Real-time Database
+What I Learned: Using Firebase for backend services. Learned:
+
+Firebase setup and configuration
+
+Firestore database
+
+Authentication service
+
+Real-time updates
+
+Hosting static sites
+
+Practice Example: Firebase Setup
+
+// firebase.js
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+Practice Questions:
+
+Setup Firebase project
+
+Create user registration with Firebase Auth
+
+Build simple chat with Firestore

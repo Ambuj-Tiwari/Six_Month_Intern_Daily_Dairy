@@ -1,0 +1,40 @@
+Introduction to React
+
+Today's Focus: React Basics, JSX, Components
+What I Learned: React is a JavaScript library for building user interfaces. Learned:
+
+Why React? Component-based, virtual DOM
+
+JSX syntax - HTML in JavaScript
+
+Functional components
+
+Component rendering
+
+Basic props passing
+
+React Developer Tools
+
+Practice Example: First Component
+
+import React from 'react';
+
+function App() {
+    return (
+        <div>
+            <h1>Hello React!</h1>
+            <p>Today I started learning React</p>
+        </div>
+    );
+}
+
+export default App;
+Practice Questions:
+
+Create Welcome component with your name
+
+Make Profile component with image and bio
+
+Build Header and Footer components
+
+

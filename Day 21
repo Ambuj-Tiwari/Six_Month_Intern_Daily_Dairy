@@ -1,0 +1,46 @@
+ React Router
+
+Today's Focus: Client-side Routing, Navigation
+What I Learned: Creating multi-page applications. Learned:
+
+react-router-dom package
+
+BrowserRouter, Routes, Route
+
+Link and NavLink
+
+URL parameters
+
+Nested routes
+
+Programmatic navigation
+
+Practice Example: Basic Routing
+
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
+function App() {
+    return (
+        <BrowserRouter>
+            <nav>
+                <Link to="/">Home</Link>
+                <Link to="/about">About</Link>
+                <Link to="/contact">Contact</Link>
+            </nav>
+            
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+        </BrowserRouter>
+    );
+}
+Practice Questions:
+
+Create blog with post detail pages
+
+Build e-commerce with product pages
+
+Make dashboard with protected routes

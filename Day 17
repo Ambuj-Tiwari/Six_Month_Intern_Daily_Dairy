@@ -1,0 +1,39 @@
+React Props & Components
+
+Today's Focus: Props, Reusable Components, Children Prop
+What I Learned: How to pass data between components. Learned:
+
+Props as function parameters
+
+Default props
+
+PropTypes for type checking
+
+Destructuring props
+
+Children prop for nested content
+
+Component composition
+
+Practice Example: Card Component
+function Card({ title, description, children }) {
+    return (
+        <div className="card">
+            <h3>{title}</h3>
+            <p>{description}</p>
+            {children}
+        </div>
+    );
+}
+
+// Usage
+<Card title="React Props" description="Learning props today">
+    <button>Learn More</button>
+</Card>
+Practice Questions:
+
+Create Product component with props
+
+Build Alert component with type and message props
+
+Make reusable Button component with variants
