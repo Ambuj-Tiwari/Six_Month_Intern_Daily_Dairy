@@ -1,0 +1,30 @@
+Project 1: Todo App
+
+Today's Focus: Complete React Project with Firebase
+What I Built: Full-featured todo application with:
+
+User authentication (sign up/login)
+
+Add, edit, delete todos
+
+Mark todos as complete
+
+Filter todos (all/active/completed)
+
+Real-time updates
+
+Responsive design with Tailwind
+
+Features Implemented:
+
+Firebase authentication
+
+Firestore database
+
+React hooks (useState, useEffect, useContext)
+
+Form handling
+
+Error handling and loading states
+
+Tech Stack: React, Firebase, Tailwind CSS

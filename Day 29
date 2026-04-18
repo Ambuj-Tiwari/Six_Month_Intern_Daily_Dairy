@@ -1,0 +1,63 @@
+React Performance Optimization
+
+Today's Focus: Performance Techniques, Best Practices
+What I Learned: Optimizing React applications. Learned:
+
+React.memo for component memoization
+
+useMemo for expensive calculations
+
+useCallback for function references
+
+Code splitting with React.lazy
+
+Virtualization for long lists
+
+Profiler tools
+
+Practice Example: Optimized List
+
+import { useMemo, useCallback } from 'react';
+
+function ProductList({ products, onSelect }) {
+    // Memoize expensive calculation
+    const totalValue = useMemo(() => {
+        return products.reduce((sum, product) => sum + product.price, 0);
+    }, [products]);
+    
+    // Memoize callback function
+    const handleSelect = useCallback((productId) => {
+        onSelect(productId);
+    }, [onSelect]);
+    
+    return (
+        <div>
+            <p>Total Value: ${totalValue}</p>
+            {products.map(product => (
+                <ProductItem 
+                    key={product.id}
+                    product={product}
+                    onSelect={handleSelect}
+                />
+            ))}
+        </div>
+    );
+}
+
+const ProductItem = React.memo(({ product, onSelect }) => {
+    return (
+        <div onClick={() => onSelect(product.id)}>
+            {product.name}
+        </div>
+    );
+});
+
+Practice Questions:
+
+Optimize large data table
+
+Implement infinite scroll
+
+Add debounce to search input
+
+

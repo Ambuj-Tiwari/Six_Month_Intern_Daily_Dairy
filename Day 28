@@ -1,0 +1,41 @@
+– React Custom Hooks
+
+Today's Focus: Reusable Logic, Custom Hook Creation
+What I Learned: Creating custom hooks for reusable functionality. Learned:
+
+Hook naming convention (use*)
+
+Extracting component logic
+
+Parameter passing
+
+Return values
+
+Multiple custom hooks
+
+Practice Example: useLocalStorage Hook
+
+import { useState, useEffect } from 'react';
+
+function useLocalStorage(key, initialValue) {
+    const [value, setValue] = useState(() => {
+        const storedValue = localStorage.getItem(key);
+        return storedValue ? JSON.parse(storedValue) : initialValue;
+    });
+    
+    useEffect(() => {
+        localStorage.setItem(key, JSON.stringify(value));
+    }, [key, value]);
+    
+    return [value, setValue];
+}
+
+// Usage
+const [theme, setTheme] = useLocalStorage('theme', 'light');
+Practice Questions:
+
+Create useFetch hook for API calls
+
+Build useForm hook for form handling
+
+Make useWindowSize hook for responsive design
