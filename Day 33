@@ -1,0 +1,41 @@
+MongoDB Basics
+
+Today's Focus: NoSQL Database, MongoDB Operations
+What I Learned: Document-based database for modern apps. Learned:
+
+MongoDB vs SQL databases
+
+Documents and collections
+
+BSON format
+
+MongoDB Atlas (cloud)
+
+Basic CRUD operations
+
+MongoDB Compass GUI
+
+Practice Example: MongoDB Queries
+
+// Connect to MongoDB
+const { MongoClient } = require('mongodb');
+const client = new MongoClient('mongodb://localhost:27017');
+
+async function run() {
+    await client.connect();
+    const db = client.db('mydatabase');
+    const users = db.collection('users');
+    
+    // Insert document
+    await users.insertOne({
+        name: 'John',
+        email: 'john@example.com',
+        age: 25
+    });
+    
+    // Find documents
+    const allUsers = await users.find({}).toArray();
+    console.log(allUsers);
+}
+
+run().catch(console.dir);

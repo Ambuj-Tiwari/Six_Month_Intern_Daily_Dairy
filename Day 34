@@ -1,0 +1,58 @@
+Mongoose ODM
+
+Today's Focus: MongoDB Object Data Modeling
+What I Learned: Elegant MongoDB object modeling for Node.js. Learned:
+
+Schema definition
+
+Models creation
+
+Data validation
+
+Middleware (pre/post hooks)
+
+Virtual properties
+
+Instance methods
+
+Practice Example: User Model
+
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+        minlength: 3
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true
+    },
+    age: {
+        type: Number,
+        min: 18,
+        max: 100
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+// Instance method
+userSchema.methods.getInfo = function() {
+    return `${this.username} (${this.email})`;
+};
+
+// Static method
+userSchema.statics.findByEmail = function(email) {
+    return this.findOne({ email });
+};
+
+const User = mongoose.model('User', userSchema);
+module.exports = User;

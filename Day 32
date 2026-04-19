@@ -1,0 +1,43 @@
+Express.js Framework
+
+Today's Focus: Web Framework, Routing, Middleware
+What I Learned: Building web applications with Express. Learned:
+
+Express setup and routing
+
+Request parameters (params, query, body)
+
+Middleware functions
+
+Error handling
+
+Static file serving
+
+Template engines
+
+Practice Example: Express API
+
+const express = require('express');
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.get('/api/users', (req, res) => {
+    res.json([{ id: 1, name: 'John' }, { id: 2, name: 'Jane' }]);
+});
+
+app.post('/api/users', (req, res) => {
+    const { name, email } = req.body;
+    res.json({ message: 'User created', user: { name, email } });
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+app.listen(3000, () => console.log('Server started on port 3000'));
