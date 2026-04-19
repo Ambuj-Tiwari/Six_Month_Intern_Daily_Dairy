@@ -1,0 +1,75 @@
+Real-time with Socket.io
+
+Today's Focus: WebSockets for Real-time Communication
+What I Learned: Bidirectional real-time communication. Learned:
+
+Socket.io setup
+
+Connection handling
+
+Room management
+
+Broadcasting messages
+
+Error handling
+
+Disconnection handling
+
+Practice Example: Chat Application
+// Server-side
+const socketIO = require('socket.io');
+
+const initializeSocket = (server) => {
+    const io = socketIO(server, {
+        cors: {
+            origin: process.env.CLIENT_URL,
+            methods: ['GET', 'POST']
+        }
+    });
+    
+    io.on('connection', (socket) => {
+        console.log('New client connected:', socket.id);
+        
+        // Join room
+        socket.on('join-room', (roomId) => {
+            socket.join(roomId);
+            socket.to(roomId).emit('user-joined', socket.id);
+        });
+        
+        // Send message
+        socket.on('send-message', ({ roomId, message, sender }) => {
+            io.to(roomId).emit('receive-message', {
+                message,
+                sender,
+                timestamp: new Date()
+            });
+        });
+        
+        // Typing indicator
+        socket.on('typing', ({ roomId, isTyping }) => {
+            socket.to(roomId).emit('user-typing', {
+                userId: socket.id,
+                isTyping
+            });
+        });
+        
+        // Disconnect
+        socket.on('disconnect', () => {
+            console.log('Client disconnected:', socket.id);
+        });
+    });
+    
+    return io;
+};
+
+Practice Questions:
+
+Create simple chat application
+
+Build collaborative whiteboard
+
+Implement live notifications
+
+Add typing indicators
+
+

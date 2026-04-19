@@ -1,0 +1,71 @@
+ Email Sending with Node.js
+
+Today's Focus: Sending Emails Programmatically
+What I Learned: Integrating email functionality. Learned:
+
+Nodemailer setup
+
+SMTP configuration
+
+HTML email templates
+
+Email verification
+
+Password reset emails
+
+Newsletter functionality
+
+Practice Example: Send Email
+
+
+const nodemailer = require('nodemailer');
+
+// Create transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Send welcome email
+const sendWelcomeEmail = async (userEmail, userName) => {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: userEmail,
+        subject: 'Welcome to Our Platform!',
+        html: `
+            <h1>Welcome ${userName}!</h1>
+            <p>Thank you for joining our platform.</p>
+            <p>We're excited to have you on board.</p>
+            <a href="${process.env.APP_URL}/dashboard">Go to Dashboard</a>
+        `
+    };
+    
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Welcome email sent');
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+};
+
+// Send password reset email
+const sendPasswordResetEmail = async (userEmail, resetToken) => {
+    const resetLink = `${process.env.APP_URL}/reset-password/${resetToken}`;
+    
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: userEmail,
+        subject: 'Password Reset Request',
+        html: `
+            <h2>Password Reset</h2>
+            <p>Click the link below to reset your password:</p>
+            <a href="${resetLink}">Reset Password</a>
+            <p>This link will expire in 1 hour.</p>
+        `
+    };
+    
+    await transporter.sendMail(mailOptions);
+};

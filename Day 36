@@ -1,0 +1,60 @@
+ Authentication with JWT
+
+Today's Focus: Secure User Authentication
+What I Learned: Implementing JWT-based authentication. Learned:
+
+JWT structure (header.payload.signature)
+
+Token generation and verification
+
+Password hashing with bcrypt
+
+Protected routes middleware
+
+Token refresh mechanism
+
+Logout implementation
+
+Practice Example: Auth Middleware
+
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
+// Generate token
+const generateToken = (userId) => {
+    return jwt.sign(
+        { userId },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+    );
+};
+
+// Hash password
+const hashPassword = async (password) => {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+};
+
+// Compare password
+const comparePassword = async (password, hashedPassword) => {
+    return await bcrypt.compare(password, hashedPassword);
+};
+
+// Auth middleware
+const protect = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        
+        if (!token) {
+            throw new Error('No token provided');
+        }
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.userId;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Not authorized' });
+    }
+};
+
+module.exports = { generateToken, hashPassword, comparePassword, protect };

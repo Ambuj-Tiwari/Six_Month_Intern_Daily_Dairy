@@ -1,0 +1,40 @@
+ Project 3: Blog Platform (Backend)
+
+Today's Focus: Complete Backend Development
+What I Built: Full-featured blog platform backend with:
+
+User authentication (JWT)
+
+CRUD operations for blog posts
+
+Comment system
+
+Like/dislike functionality
+
+Category management
+
+Image upload for posts
+
+Search functionality
+
+API Endpoints Created:
+
+POST /api/auth/register
+
+POST /api/auth/login
+
+GET /api/posts (with pagination)
+
+POST /api/posts (with image upload)
+
+PUT /api/posts/:id
+
+DELETE /api/posts/:id
+
+POST /api/posts/:id/comments
+
+POST /api/posts/:id/like
+
+Tech Stack: Node.js, Express, MongoDB, Mongoose, JWT, Multer
+
+
