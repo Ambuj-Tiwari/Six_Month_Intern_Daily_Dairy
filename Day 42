@@ -1,0 +1,79 @@
+ Redux Toolkit State Management
+
+Today's Focus: Advanced State Management
+What I Learned: Predictable state container for JavaScript apps. Learned:
+
+Redux concepts (store, actions, reducers)
+
+Redux Toolkit setup
+
+Slices creation
+
+Async thunks
+
+DevTools integration
+
+Selectors for derived state
+
+Practice Example: Auth Slice
+
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { authService } from '../services/api';
+
+// Async thunks
+export const login = createAsyncThunk(
+    'auth/login',
+    async ({ email, password }, { rejectWithValue }) => {
+        try {
+            const response = await authService.login(email, password);
+            return response;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const logout = createAsyncThunk(
+    'auth/logout',
+    async () => {
+        await authService.logout();
+    }
+);
+
+const authSlice = createSlice({
+    name: 'auth',
+    initialState: {
+        user: authService.getCurrentUser(),
+        token: localStorage.getItem('token'),
+        loading: false,
+        error: null
+    },
+    reducers: {
+        clearError: (state) => {
+            state.error = null;
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(login.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(login.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.token = action.payload.token;
+            })
+            .addCase(login.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(logout.fulfilled, (state) => {
+                state.user = null;
+                state.token = null;
+            });
+    }
+});
+
+export const { clearError } = authSlice.actions;
+export default authSlice.reducer;

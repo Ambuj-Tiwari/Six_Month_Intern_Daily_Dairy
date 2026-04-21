@@ -1,0 +1,64 @@
+React Query for Server State
+
+Today's Focus: Data Fetching and Caching
+What I Learned: Managing server state in React apps. Learned:
+
+React Query setup
+
+Queries and mutations
+
+Cache management
+
+Infinite queries
+
+Optimistic updates
+
+Error handling
+
+Practice Example: Blog with React Query
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { postService } from '../services/api';
+
+function PostList() {
+    const queryClient = useQueryClient();
+    
+    // Fetch posts
+    const { data: posts, isLoading, error } = useQuery({
+        queryKey: ['posts'],
+        queryFn: postService.getAll,
+        staleTime: 5 * 60 * 1000 // 5 minutes
+    });
+    
+    // Create post mutation
+    const createPostMutation = useMutation({
+        mutationFn: postService.create,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['posts']);
+        }
+    });
+    
+    // Delete post mutation
+    const deletePostMutation = useMutation({
+        mutationFn: postService.delete,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['posts']);
+        }
+    });
+    
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    
+    return (
+        <div>
+            {posts?.map(post => (
+                <div key={post._id}>
+                    <h3>{post.title}</h3>
+                    <button onClick={() => deletePostMutation.mutate(post._id)}>
+                        Delete
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}

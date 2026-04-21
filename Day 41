@@ -1,0 +1,83 @@
+Connecting React Frontend with Backend
+
+Today's Focus: Full Stack Integration
+What I Learned: Connecting React app to Node.js backend. Learned:
+
+Environment variables setup
+
+API service layer
+
+Axios for HTTP requests
+
+CORS configuration
+
+Error handling in frontend
+
+Loading states management
+
+Practice Example: API Service
+
+// api.js
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Add token to requests
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// Post service
+export const postService = {
+    getAll: async (page = 1, limit = 10) => {
+        const response = await api.get(`/posts?page=${page}&limit=${limit}`);
+        return response.data;
+    },
+    
+    create: async (postData) => {
+        const response = await api.post('/posts', postData);
+        return response.data;
+    },
+    
+    update: async (id, postData) => {
+        const response = await api.put(`/posts/${id}`, postData);
+        return response.data;
+    },
+    
+    delete: async (id) => {
+        const response = await api.delete(`/posts/${id}`);
+        return response.data;
+    }
+};
+
+// Auth service
+export const authService = {
+    login: async (email, password) => {
+        const response = await api.post('/auth/login', { email, password });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        return response.data;
+    },
+    
+    logout: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    },
+    
+    getCurrentUser: () => {
+        return JSON.parse(localStorage.getItem('user'));
+    }
+};

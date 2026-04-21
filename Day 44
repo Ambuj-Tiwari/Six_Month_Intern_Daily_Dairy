@@ -1,0 +1,60 @@
+Testing with Jest & React Testing Library
+
+Today's Focus: Testing React Applications
+What I Learned: Writing tests for quality assurance. Learned:
+
+Jest setup and configuration
+
+React Testing Library
+
+Test structure (Arrange, Act, Assert)
+
+Mocking API calls
+
+Testing user interactions
+
+Snapshot testing
+
+Practice Example: Component Testing
+
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+describe('Counter Component', () => {
+    test('renders counter with initial value 0', () => {
+        render(<Counter />);
+        const countElement = screen.getByText(/count: 0/i);
+        expect(countElement).toBeInTheDocument();
+    });
+    
+    test('increments count when + button is clicked', () => {
+        render(<Counter />);
+        const incrementButton = screen.getByText('+');
+        const countElement = screen.getByText(/count: 0/i);
+        
+        fireEvent.click(incrementButton);
+        expect(countElement).toHaveTextContent('Count: 1');
+    });
+    
+    test('decrements count when - button is clicked', () => {
+        render(<Counter />);
+        const decrementButton = screen.getByText('-');
+        const countElement = screen.getByText(/count: 0/i);
+        
+        fireEvent.click(decrementButton);
+        expect(countElement).toHaveTextContent('Count: -1');
+    });
+    
+    test('resets count to 0 when reset button is clicked', () => {
+        render(<Counter />);
+        const incrementButton = screen.getByText('+');
+        const resetButton = screen.getByText(/reset/i);
+        
+        fireEvent.click(incrementButton);
+        fireEvent.click(incrementButton);
+        fireEvent.click(resetButton);
+        
+        const countElement = screen.getByText(/count: 0/i);
+        expect(countElement).toBeInTheDocument();
+    });
+});

@@ -1,0 +1,75 @@
+TypeScript with React
+
+Today's Focus: Static Typing for JavaScript
+What I Learned: Adding type safety to React apps. Learned:
+
+TypeScript basics
+
+Interface and type definitions
+
+Props typing
+
+State typing with useState
+
+Generic types
+
+Type checking in development
+
+Practice Example: Typed Components
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    age?: number; // Optional property
+}
+
+interface Product {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    inStock: boolean;
+}
+
+interface ButtonProps {
+    children: React.ReactNode;
+    onClick: () => void;
+    variant?: 'primary' | 'secondary' | 'danger';
+    size?: 'small' | 'medium' | 'large';
+    disabled?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({
+    children,
+    onClick,
+    variant = 'primary',
+    size = 'medium',
+    disabled = false
+}) => {
+    return (
+        <button
+            className={`btn btn-${variant} btn-${size}`}
+            onClick={onClick}
+            disabled={disabled}
+        >
+            {children}
+        </button>
+    );
+};
+
+// Generic component example
+interface ListProps<T> {
+    items: T[];
+    renderItem: (item: T) => React.ReactNode;
+}
+
+function List<T>({ items, renderItem }: ListProps<T>) {
+    return (
+        <ul>
+            {items.map((item, index) => (
+                <li key={index}>{renderItem(item)}</li>
+            ))}
+        </ul>
+    );
+}
