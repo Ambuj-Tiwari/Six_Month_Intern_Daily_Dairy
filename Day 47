@@ -1,0 +1,96 @@
+ GraphQL with Apollo Client
+
+Today's Focus: Modern API Query Language
+What I Learned: Efficient data fetching with GraphQL. Learned:
+
+GraphQL vs REST
+
+Queries and mutations
+
+Apollo Client setup
+
+Caching strategies
+
+Real-time subscriptions
+
+Error handling
+
+Practice Example: GraphQL Integration
+import { ApolloClient, InMemoryCache, gql, useQuery, useMutation } from '@apollo/client';
+
+// Initialize Apollo Client
+const client = new ApolloClient({
+    uri: 'https://api.example.com/graphql',
+    cache: new InMemoryCache()
+});
+
+// Queries
+const GET_POSTS = gql`
+    query GetPosts($limit: Int, $offset: Int) {
+        posts(limit: $limit, offset: $offset) {
+            id
+            title
+            body
+            author {
+                id
+                name
+                email
+            }
+            createdAt
+        }
+    }
+`;
+
+const CREATE_POST = gql`
+    mutation CreatePost($title: String!, $body: String!) {
+        createPost(title: $title, body: $body) {
+            id
+            title
+            body
+            createdAt
+        }
+    }
+`;
+
+// Component using GraphQL
+function PostList() {
+    const { loading, error, data, fetchMore } = useQuery(GET_POSTS, {
+        variables: { limit: 10, offset: 0 }
+    });
+    
+    const [createPost] = useMutation(CREATE_POST, {
+        update(cache, { data: { createPost } }) {
+            cache.modify({
+                fields: {
+                    posts(existingPosts = []) {
+                        const newPostRef = cache.writeFragment({
+                            data: createPost,
+                            fragment: gql`
+                                fragment NewPost on Post {
+                                    id
+                                    title
+                                    body
+                                }
+                            `
+                        });
+                        return [newPostRef, ...existingPosts];
+                    }
+                }
+            });
+        }
+    });
+    
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+    
+    return (
+        <div>
+            {data.posts.map(post => (
+                <div key={post.id}>
+                    <h3>{post.title}</h3>
+                    <p>{post.body}</p>
+                </div>
+            ))}
+        </div>
+    );
+}

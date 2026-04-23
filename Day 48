@@ -1,0 +1,82 @@
+DevOps Basics: Docker
+
+Today's Focus: Containerization Technology
+What I Learned: Packaging applications with dependencies. Learned:
+
+Docker concepts
+
+Dockerfile creation
+
+Image building
+
+Container management
+
+Docker Compose
+
+Multi-stage builds
+
+Practice Example: Docker Configuration
+
+
+# Dockerfile for Node.js application
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+ENV NODE_ENV=production
+ENV PORT=3000
+EXPOSE 3000
+
+USER node
+CMD ["node", "server.js"]
+
+
+docker-compose.yml for full stack:
+
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/mydatabase?authSource=admin
+      - JWT_SECRET=your_jwt_secret
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
