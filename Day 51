@@ -1,0 +1,68 @@
+Web Security Fundamentals
+
+Today's Focus: Security Best Practices
+What I Learned: Protecting web applications from attacks. Learned:
+
+HTTPS implementation
+
+CORS configuration
+
+Input validation and sanitization
+
+SQL/NoSQL injection prevention
+
+XSS (Cross-site Scripting) protection
+
+CSRF (Cross-site Request Forgery) protection
+
+Rate limiting
+
+Helmet.js for security headers
+
+Practice Example: Security Middleware
+
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const cors = require('cors');
+
+// Security middleware setup
+app.use(helmet());
+
+// CORS configuration
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api', limiter);
+
+// Data sanitization against XSS
+app.use(xss());
+
+// Prevent parameter pollution
+app.use(hpp());
+
+// Input validation middleware
+const validateRequest = (schema) => {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body);
+        if (error) {
+            return res.status(400).json({
+                error: error.details[0].message
+            });
+        }
+        next();
+    };
+};
+
+// Password validation regex
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+

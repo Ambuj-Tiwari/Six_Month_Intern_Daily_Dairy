@@ -1,0 +1,79 @@
+WebSockets Advanced Features
+
+Today's Focus: Real-time Application Development
+What I Learned: Advanced WebSocket implementations. Learned:
+
+Room-based communication
+
+User presence tracking
+
+Reconnection strategies
+
+Binary data transfer
+
+Scalability considerations
+
+Load balancing with WebSockets
+
+Practice Example: Advanced Chat Application
+
+// Advanced Socket.io server
+const onlineUsers = new Map();
+
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+    
+    // User authentication
+    socket.on('authenticate', (token) => {
+        try {
+            const user = verifyToken(token);
+            onlineUsers.set(socket.id, {
+                userId: user.id,
+                username: user.username,
+                connectedAt: new Date()
+            });
+            
+            socket.join(`user:${user.id}`);
+            io.emit('online-users', Array.from(onlineUsers.values()));
+        } catch (error) {
+            socket.disconnect();
+        }
+    });
+    
+    // Private messaging
+    socket.on('private-message', ({ to, message }) => {
+        const sender = onlineUsers.get(socket.id);
+        io.to(`user:${to}`).emit('private-message', {
+            from: sender.userId,
+            message,
+            timestamp: new Date()
+        });
+    });
+    
+    // Typing indicators
+    socket.on('typing-start', (chatId) => {
+        socket.to(`chat:${chatId}`).emit('user-typing', {
+            userId: onlineUsers.get(socket.id).userId,
+            isTyping: true
+        });
+    });
+    
+    socket.on('typing-stop', (chatId) => {
+        socket.to(`chat:${chatId}`).emit('user-typing', {
+            userId: onlineUsers.get(socket.id).userId,
+            isTyping: false
+        });
+    });
+    
+    // Presence tracking
+    socket.on('disconnect', () => {
+        onlineUsers.delete(socket.id);
+        io.emit('online-users', Array.from(onlineUsers.values()));
+        console.log('User disconnected:', socket.id);
+    });
+    
+    // Heartbeat for connection monitoring
+    socket.on('heartbeat', () => {
+        socket.emit('heartbeat-response');
+    });
+});

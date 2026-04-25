@@ -1,0 +1,73 @@
+Performance Optimization
+
+Today's Focus: Optimizing Web Application Performance
+What I Learned: Techniques for faster loading and better UX. Learned:
+
+Code splitting and lazy loading
+
+Image optimization
+
+Caching strategies
+
+Database query optimization
+
+Bundle size analysis
+
+Lighthouse audits
+
+CDN implementation
+
+Practice Example: Performance Improvements
+// React lazy loading
+import React, { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function App() {
+    return (
+        <div>
+            <Suspense fallback={<div>Loading...</div>}>
+                <HeavyComponent />
+            </Suspense>
+        </div>
+    );
+}
+
+// Image optimization with Next.js Image
+import Image from 'next/image';
+
+function OptimizedImage() {
+    return (
+        <Image
+            src="/profile.jpg"
+            alt="Profile"
+            width={500}
+            height={500}
+            priority={false}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,..."
+        />
+    );
+}
+
+// Database query optimization
+const getProducts = async (page = 1, limit = 10) => {
+    return await Product.find()
+        .select('name price image') // Select only needed fields
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean() // Returns plain JavaScript objects
+        .exec();
+};
+
+// Redis caching example
+const getCachedData = async (key) => {
+    const cachedData = await redisClient.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+    
+    const data = await fetchDataFromDatabase();
+    await redisClient.setex(key, 3600, JSON.stringify(data)); // Cache for 1 hour
+    return data;
+};

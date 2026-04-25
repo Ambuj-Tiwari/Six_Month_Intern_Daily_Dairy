@@ -1,0 +1,81 @@
+PWA (Progressive Web Apps)
+
+Today's Focus: Building Installable Web Apps
+What I Learned: Making web apps work offline and feel native. Learned:
+
+Service workers
+
+Web app manifest
+
+Offline functionality
+
+Push notifications
+
+Add to home screen
+
+Background sync
+
+Practice Example: PWA Implementation
+
+// Service worker (sw.js)
+const CACHE_NAME = 'v1';
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/styles.css',
+    '/app.js',
+    '/manifest.json'
+];
+
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+    );
+});
+
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request)
+                    .then(response => {
+                        if (!response || response.status !== 200) {
+                            return response;
+                        }
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        return response;
+                    });
+            })
+    );
+});
+
+// Web app manifest (manifest.json)
+{
+    "name": "My PWA App",
+    "short_name": "MyApp",
+    "description": "A progressive web application",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4a90e2",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
