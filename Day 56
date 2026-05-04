@@ -1,0 +1,127 @@
+GraphQL Server with Apollo Server
+
+Today's Focus: Building GraphQL Backend
+What I Learned: Creating GraphQL APIs with Apollo Server. Learned:
+
+Schema definition language (SDL)
+
+Resolvers implementation
+
+Data sources
+
+Subscriptions for real-time
+
+Error handling
+
+Performance monitoring
+
+Practice Example: GraphQL Server
+
+const { ApolloServer, gql } = require('apollo-server');
+const mongoose = require('mongoose');
+
+// Type definitions
+const typeDefs = gql`
+    type User {
+        id: ID!
+        name: String!
+        email: String!
+        posts: [Post!]!
+        createdAt: String!
+    }
+    
+    type Post {
+        id: ID!
+        title: String!
+        content: String!
+        author: User!
+        comments: [Comment!]!
+        createdAt: String!
+    }
+    
+    type Comment {
+        id: ID!
+        content: String!
+        author: User!
+        post: Post!
+        createdAt: String!
+    }
+    
+    type Query {
+        users: [User!]!
+        user(id: ID!): User
+        posts: [Post!]!
+        post(id: ID!): Post
+    }
+    
+    type Mutation {
+        createUser(name: String!, email: String!, password: String!): User!
+        createPost(title: String!, content: String!): Post!
+        createComment(postId: ID!, content: String!): Comment!
+    }
+    
+    type Subscription {
+        postCreated: Post!
+        commentAdded(postId: ID!): Comment!
+    }
+`;
+
+// Resolvers
+const resolvers = {
+    Query: {
+        users: async () => await User.find(),
+        user: async (_, { id }) => await User.findById(id),
+        posts: async () => await Post.find().populate('author'),
+        post: async (_, { id }) => await Post.findById(id).populate('author')
+    },
+    
+    Mutation: {
+        createUser: async (_, { name, email, password }) => {
+            const user = new User({ name, email, password });
+            return await user.save();
+        },
+        
+        createPost: async (_, { title, content }, { user }) => {
+            if (!user) throw new Error('Not authenticated');
+            
+            const post = new Post({
+                title,
+                content,
+                author: user.id
+            });
+            
+            const savedPost = await post.save();
+            pubsub.publish('POST_CREATED', { postCreated: savedPost });
+            
+            return savedPost;
+        }
+    },
+    
+    Subscription: {
+        postCreated: {
+            subscribe: () => pubsub.asyncIterator(['POST_CREATED'])
+        }
+    },
+    
+    User: {
+        posts: async (parent) => await Post.find({ author: parent.id })
+    },
+    
+    Post: {
+        comments: async (parent) => await Comment.find({ post: parent.id })
+    }
+};
+
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+        const token = req.headers.authorization || '';
+        const user = verifyToken(token);
+        return { user };
+    }
+});
+
+server.listen().then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
+});

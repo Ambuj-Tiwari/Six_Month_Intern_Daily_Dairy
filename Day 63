@@ -1,0 +1,137 @@
+ WebAssembly with React
+
+Today's Focus: High-performance Web Applications
+What I Learned: Running compiled code in browser. Learned:
+
+WebAssembly basics
+
+Rust/C++ compilation to WASM
+
+JavaScript-WASM interoperability
+
+Performance benchmarking
+
+Use cases for WASM
+
+Integration with React
+
+Practice Example: Image Processing with WASM
+
+// lib.rs (Rust code compiled to WASM)
+use wasm_bindgen::prelude::*;
+use image::{ImageBuffer, Rgba};
+
+#[wasm_bindgen]
+pub struct ImageProcessor {
+    width: u32,
+    height: u32,
+    pixels: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl ImageProcessor {
+    pub fn new(width: u32, height: u32, pixels: Vec<u8>) -> ImageProcessor {
+        ImageProcessor {
+            width,
+            height,
+            pixels,
+        }
+    }
+    
+    pub fn grayscale(&mut self) -> Vec<u8> {
+        let mut result = Vec::with_capacity((self.width * self.height * 4) as usize);
+        
+        for i in (0..self.pixels.len()).step_by(4) {
+            let r = self.pixels[i] as f32;
+            let g = self.pixels[i + 1] as f32;
+            let b = self.pixels[i + 2] as f32;
+            
+            let gray = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
+            
+            result.push(gray);
+            result.push(gray);
+            result.push(gray);
+            result.push(self.pixels[i + 3]);
+        }
+        
+        result
+    }
+    
+    pub fn blur(&mut self, radius: u32) -> Vec<u8> {
+        // Gaussian blur implementation
+        // ...
+    }
+    
+    pub fn get_pixels(&self) -> Vec<u8> {
+        self.pixels.clone()
+    }
+}
+
+
+// React component using WASM
+import React, { useRef, useState } from 'react';
+import init, { ImageProcessor } from '../wasm/image_processor';
+
+function ImageEditor() {
+    const [imageData, setImageData] = useState(null);
+    const [processed, setProcessed] = useState(null);
+    const canvasRef = useRef(null);
+    
+    const loadWasm = async () => {
+        await init();
+    };
+    
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        const image = new Image();
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            image.src = e.target.result;
+            image.onload = async () => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, image.width, image.height);
+                setImageData(imageData);
+            };
+        };
+        
+        reader.readAsDataURL(file);
+    };
+    
+    const applyGrayscale = async () => {
+        if (!imageData) return;
+        
+        await loadWasm();
+        const processor = new ImageProcessor(
+            imageData.width,
+            imageData.height,
+            Array.from(imageData.data)
+        );
+        
+        const processedData = processor.grayscale();
+        
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const newImageData = new ImageData(
+            new Uint8ClampedArray(processedData),
+            imageData.width,
+            imageData.height
+        );
+        
+        ctx.putImageData(newImageData, 0, 0);
+        setProcessed(newImageData);
+    };
+    
+    return (
+        <div>
+            <input type="file" accept="image/*" onChange={handleImageUpload} />
+            <button onClick={applyGrayscale}>Grayscale</button>
+            <canvas ref={canvasRef} />
+        </div>
+    );
+}

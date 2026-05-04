@@ -1,0 +1,96 @@
+React Native Fundamentals
+
+Today's Focus: Mobile App Development with React Native
+What I Learned: Building cross-platform mobile apps with JavaScript. Learned:
+
+React Native vs React differences
+
+Core components (View, Text, Image, etc.)
+
+StyleSheet for mobile styling
+
+Navigation with React Navigation
+
+Platform-specific code
+
+Mobile UI/UX patterns
+
+Practice Example: Basic Mobile App
+
+// App.js
+import React from 'react';
+import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+
+export default function App() {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>My First React Native App</Text>
+        <Text style={styles.count}>Count: {count}</Text>
+        
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => setCount(count + 1)}
+          >
+            <Text style={styles.buttonText}>Increment</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.button, styles.resetButton]}
+            onPress={() => setCount(0)}
+          >
+            <Text style={styles.buttonText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    color: '#333',
+  },
+  count: {
+    fontSize: 48,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 40,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 10,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#FF3B30',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});

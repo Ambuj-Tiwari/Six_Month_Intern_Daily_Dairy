@@ -1,0 +1,136 @@
+WebRTC for Video Calls
+
+Today's Focus: Real-time Communication Protocol
+What I Learned: Peer-to-peer video/audio communication. Learned:
+
+WebRTC architecture
+
+Signaling server
+
+STUN/TURN servers
+
+Media streams
+
+Data channels
+
+Connection establishment
+
+Practice Example: Video Chat Application
+
+// Signaling server with Socket.io
+const users = {};
+
+io.on('connection', (socket) => {
+    socket.on('join-room', (roomId, userId) => {
+        socket.join(roomId);
+        users[socket.id] = userId;
+        
+        socket.to(roomId).emit('user-connected', userId);
+        
+        socket.on('disconnect', () => {
+            socket.to(roomId).emit('user-disconnected', userId);
+            delete users[socket.id];
+        });
+        
+        // WebRTC signaling
+        socket.on('offer', (offer, targetUserId) => {
+            socket.to(roomId).emit('offer', {
+                offer,
+                from: userId,
+                to: targetUserId
+            });
+        });
+        
+        socket.on('answer', (answer, targetUserId) => {
+            socket.to(roomId).emit('answer', {
+                answer,
+                from: userId,
+                to: targetUserId
+            });
+        });
+        
+        socket.on('ice-candidate', (candidate, targetUserId) => {
+            socket.to(roomId).emit('ice-candidate', {
+                candidate,
+                from: userId,
+                to: targetUserId
+            });
+        });
+    });
+});
+
+// Client-side WebRTC
+class VideoCall {
+    constructor() {
+        this.localStream = null;
+        this.peerConnections = {};
+    }
+    
+    async startLocalStream() {
+        try {
+            this.localStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            document.getElementById('localVideo').srcObject = this.localStream;
+        } catch (error) {
+            console.error('Error accessing media devices:', error);
+        }
+    }
+    
+    createPeerConnection(userId) {
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                // Add TURN server for NAT traversal
+            ]
+        };
+        
+        const peerConnection = new RTCPeerConnection(configuration);
+        
+        // Add local stream
+        this.localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, this.localStream);
+        });
+        
+        // Handle incoming stream
+        peerConnection.ontrack = (event) => {
+            const remoteVideo = document.getElementById(`remoteVideo-${userId}`);
+            if (remoteVideo) {
+                remoteVideo.srcObject = event.streams[0];
+            }
+        };
+        
+        // ICE candidate handling
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('ice-candidate', event.candidate, userId);
+            }
+        };
+        
+        this.peerConnections[userId] = peerConnection;
+        return peerConnection;
+    }
+    
+    async createOffer(userId) {
+        const peerConnection = this.createPeerConnection(userId);
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        socket.emit('offer', offer, userId);
+    }
+    
+    async handleOffer(offer, fromUserId) {
+        const peerConnection = this.createPeerConnection(fromUserId);
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', answer, fromUserId);
+    }
+    
+    async handleAnswer(answer, fromUserId) {
+        const peerConnection = this.peerConnections[fromUserId];
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    }
+}
+

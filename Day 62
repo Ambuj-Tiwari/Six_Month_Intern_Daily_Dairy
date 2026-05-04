@@ -1,0 +1,92 @@
+Server-side Rendering (SSR) Deep Dive
+
+Today's Focus: Advanced SSR Techniques
+What I Learned: Optimizing SSR for performance and SEO. Learned:
+
+Streaming SSR
+
+Selective hydration
+
+Code splitting with SSR
+
+Data fetching strategies
+
+Caching strategies
+
+Error handling in SSR
+
+Practice Example: Next.js with Advanced SSR
+// Dynamic import with SSR
+import dynamic from 'next/dynamic';
+
+const HeavyComponent = dynamic(
+    () => import('../components/HeavyComponent'),
+    {
+        loading: () => <p>Loading...</p>,
+        ssr: false // Disable SSR for this component
+    }
+);
+
+// Streaming SSR with React 18
+import { Suspense } from 'react';
+
+export default function Page() {
+    return (
+        <div>
+            <Suspense fallback={<HeaderSkeleton />}>
+                <Header />
+            </Suspense>
+            
+            <main>
+                <Suspense fallback={<ArticleSkeleton />}>
+                    <Article />
+                </Suspense>
+                
+                <Suspense fallback={<CommentsSkeleton />}>
+                    <Comments />
+                </Suspense>
+            </main>
+        </div>
+    );
+}
+
+// Data fetching with caching
+export async function getServerSideProps(context) {
+    const { req, res } = context;
+    
+    // Set cache headers
+    res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=10, stale-while-revalidate=59'
+    );
+    
+    // Fetch data with revalidation
+    const data = await fetchWithCache('api/data', {
+        revalidate: 60, // Revalidate every 60 seconds
+        tags: ['data'] // For tag-based revalidation
+    });
+    
+    return {
+        props: {
+            data
+        }
+    };
+}
+
+// Incremental Static Regeneration (ISR)
+export async function getStaticProps() {
+    const data = await fetchData();
+    
+    return {
+        props: {
+            data
+        },
+        revalidate: 60, // Regenerate every 60 seconds
+    };
+}
+
+// On-demand revalidation
+export async function handler(req, res) {
+    await res.revalidate('/path-to-revalidate');
+    return res.json({ revalidated: true });
+}
