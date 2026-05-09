@@ -1,0 +1,382 @@
+WebAssembly with Rust
+
+Today's Focus: High-performance Web Applications
+What I Learned: Using Rust for web development. Learned:
+
+Rust basics for WebAssembly
+
+wasm-bindgen for JS interoperability
+
+Performance optimization
+
+Memory management
+
+Integration with JavaScript
+
+Building and bundling
+
+Practice Example: Image Processor
+// Cargo.toml
+[package]
+name = "image-processor"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+image = "0.24"
+base64 = "0.21"
+
+// src/lib.rs
+use wasm_bindgen::prelude::*;
+use image::{ImageBuffer, Rgba};
+use base64::{encode, decode};
+
+#[wasm_bindgen]
+pub struct ImageProcessor {
+    width: u32,
+    height: u32,
+    pixels: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl ImageProcessor {
+    #[wasm_bindgen(constructor)]
+    pub fn new(width: u32, height: u32, pixels: Vec<u8>) -> ImageProcessor {
+        ImageProcessor {
+            width,
+            height,
+            pixels,
+        }
+    }
+
+    pub fn grayscale(&mut self) -> Vec<u8> {
+        let mut result = Vec::with_capacity(self.pixels.len());
+        
+        for i in (0..self.pixels.len()).step_by(4) {
+            let r = self.pixels[i] as f32;
+            let g = self.pixels[i + 1] as f32;
+            let b = self.pixels[i + 2] as f32;
+            
+            let gray = (0.299 * r + 0.587 * g + 0.114 * b) as u8;
+            
+            result.push(gray);
+            result.push(gray);
+            result.push(gray);
+            result.push(self.pixels[i + 3]);
+        }
+        
+        result
+    }
+
+    pub fn invert(&mut self) -> Vec<u8> {
+        let mut result = self.pixels.clone();
+        
+        for i in (0..result.len()).step_by(4) {
+            result[i] = 255 - result[i]; // R
+            result[i + 1] = 255 - result[i + 1]; // G
+            result[i + 2] = 255 - result[i + 2]; // B
+            // Alpha channel remains unchanged
+        }
+        
+        result
+    }
+
+    pub fn blur(&mut self, radius: u32) -> Vec<u8> {
+        let img_buffer = ImageBuffer::<Rgba<u8>, _>::from_raw(
+            self.width,
+            self.height,
+            self.pixels.clone()
+        ).unwrap();
+        
+        let blurred = image::imageops::blur(&img_buffer, radius as f32);
+        
+        blurred.to_vec()
+    }
+
+    pub fn rotate(&mut self, degrees: f64) -> Vec<u8> {
+        let img_buffer = ImageBuffer::<Rgba<u8>, _>::from_raw(
+            self.width,
+            self.height,
+            self.pixels.clone()
+        ).unwrap();
+        
+        let rotated = image::imageops::rotate(&img_buffer, degrees);
+        
+        rotated.to_vec()
+    }
+
+    pub fn resize(&mut self, new_width: u32, new_height: u32) -> Vec<u8> {
+        let img_buffer = ImageBuffer::<Rgba<u8>, _>::from_raw(
+            self.width,
+            self.height,
+            self.pixels.clone()
+        ).unwrap();
+        
+        let resized = image::imageops::resize(
+            &img_buffer,
+            new_width,
+            new_height,
+            image::imageops::FilterType::Lanczos3
+        );
+        
+        resized.to_vec()
+    }
+
+    pub fn get_dimensions(&self) -> JsValue {
+        JsValue::from_serde(&serde_json::json!({
+            "width": self.width,
+            "height": self.height
+        })).unwrap()
+    }
+}
+
+#[wasm_bindgen]
+pub fn base64_to_pixels(base64_str: &str) -> Result<Vec<u8>, JsValue> {
+    let decoded = decode(base64_str).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    Ok(decoded)
+}
+
+#[wasm_bindgen]
+pub fn pixels_to_base64(pixels: Vec<u8>) -> String {
+    encode(&pixels)
+}
+
+#[wasm_bindgen]
+pub fn add_wasm(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[wasm_bindgen]
+pub fn fibonacci(n: u32) -> u32 {
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+
+#[wasm_bindgen]
+pub fn sort_array(arr: Vec<i32>) -> Vec<i32> {
+    let mut sorted = arr.clone();
+    sorted.sort();
+    sorted
+}
+
+
+// React Component using WASM
+import React, { useState, useRef } from 'react';
+import init, { ImageProcessor, base64_to_pixels, pixels_to_base64 } from '../wasm/image_processor';
+
+function ImageEditor() {
+  const [imageSrc, setImageSrc] = useState('');
+  const [processedSrc, setProcessedSrc] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const canvasRef = useRef(null);
+  const processorRef = useRef(null);
+
+  const loadWasm = async () => {
+    await init();
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    
+    try {
+      await loadWasm();
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          
+          // Convert to base64 for WASM
+          const pixels = Array.from(imageData.data);
+          
+          // Initialize processor
+          processorRef.current = new ImageProcessor(
+            img.width,
+            img.height,
+            pixels
+          );
+          
+          setDimensions({ width: img.width, height: img.height });
+          setImageSrc(e.target.result);
+          setLoading(false);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error loading image:', error);
+      setLoading(false);
+    }
+  };
+
+  const applyGrayscale = async () => {
+    if (!processorRef.current) return;
+    
+    setLoading(true);
+    
+    try {
+      const processedPixels = processorRef.current.grayscale();
+      
+      // Update canvas
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const imageData = new ImageData(
+        new Uint8ClampedArray(processedPixels),
+        dimensions.width,
+        dimensions.height
+      );
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Update preview
+      const dataUrl = canvas.toDataURL();
+      setProcessedSrc(dataUrl);
+    } catch (error) {
+      console.error('Error applying grayscale:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyBlur = async () => {
+    if (!processorRef.current) return;
+    
+    setLoading(true);
+    
+    try {
+      const radius = 5;
+      const processedPixels = processorRef.current.blur(radius);
+      
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const imageData = new ImageData(
+        new Uint8ClampedArray(processedPixels),
+        dimensions.width,
+        dimensions.height
+      );
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      const dataUrl = canvas.toDataURL();
+      setProcessedSrc(dataUrl);
+    } catch (error) {
+      console.error('Error applying blur:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resizeImage = async () => {
+    if (!processorRef.current) return;
+    
+    setLoading(true);
+    
+    try {
+      const newWidth = Math.floor(dimensions.width * 0.5);
+      const newHeight = Math.floor(dimensions.height * 0.5);
+      
+      const processedPixels = processorRef.current.resize(newWidth, newHeight);
+      
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      const imageData = new ImageData(
+        new Uint8ClampedArray(processedPixels),
+        newWidth,
+        newHeight
+      );
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      setDimensions({ width: newWidth, height: newHeight });
+      
+      const dataUrl = canvas.toDataURL();
+      setProcessedSrc(dataUrl);
+    } catch (error) {
+      console.error('Error resizing image:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (!processedSrc) return;
+    
+    const link = document.createElement('a');
+    link.href = processedSrc;
+    link.download = 'processed-image.png';
+    link.click();
+  };
+
+  return (
+    <div className="image-editor">
+      <div className="controls">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          disabled={loading}
+        />
+        
+        <div className="buttons">
+          <button onClick={applyGrayscale} disabled={!imageSrc || loading}>
+            Grayscale
+          </button>
+          <button onClick={applyBlur} disabled={!imageSrc || loading}>
+            Blur
+          </button>
+          <button onClick={resizeImage} disabled={!imageSrc || loading}>
+            Resize 50%
+          </button>
+          <button onClick={downloadImage} disabled={!processedSrc}>
+            Download
+          </button>
+        </div>
+      </div>
+      
+      {loading && <div className="loading">Processing...</div>}
+      
+      <div className="preview-container">
+        {imageSrc && (
+          <div className="original">
+            <h3>Original</h3>
+            <img src={imageSrc} alt="Original" />
+            <p>Dimensions: {dimensions.width} x {dimensions.height}</p>
+          </div>
+        )}
+        
+        {processedSrc && (
+          <div className="processed">
+            <h3>Processed</h3>
+            <img src={processedSrc} alt="Processed" />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default ImageEditor;

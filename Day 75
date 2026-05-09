@@ -1,0 +1,205 @@
+Today's Focus: Modern Desktop Apps with React
+What I Learned: Combining Electron with React for better UI. Learned:
+
+Electron-React boilerplate
+
+Context Bridge for security
+
+Native modules integration
+
+System information access
+
+Notification system
+
+Packaging and distribution
+
+Practice Example: System Monitor App
+// preload.js - Secure context bridge
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electron', {
+  // File system
+  readFile: (path) => ipcRenderer.invoke('read-file', path),
+  writeFile: (path, content) => ipcRenderer.invoke('write-file', path, content),
+  
+  // System info
+  getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+  getCPUUsage: () => ipcRenderer.invoke('get-cpu-usage'),
+  getMemoryUsage: () => ipcRenderer.invoke('get-memory-usage'),
+  
+  // Dialog
+  showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+  showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
+  
+  // Events
+  onUpdateCPU: (callback) => ipcRenderer.on('update-cpu', callback),
+  onUpdateMemory: (callback) => ipcRenderer.on('update-memory', callback),
+});
+
+// main.js - IPC handlers for system info
+const si = require('systeminformation');
+
+// System info handlers
+ipcMain.handle('get-system-info', async () => {
+  const [osInfo, cpuInfo, memInfo] = await Promise.all([
+    si.osInfo(),
+    si.cpu(),
+    si.mem(),
+  ]);
+  
+  return {
+    platform: osInfo.platform,
+    distro: osInfo.distro,
+    arch: osInfo.arch,
+    cpuBrand: cpuInfo.manufacturer + ' ' + cpuInfo.brand,
+    cpuCores: cpuInfo.cores,
+    totalMem: Math.round(memInfo.total / 1024 / 1024 / 1024), // GB
+  };
+});
+
+ipcMain.handle('get-cpu-usage', async () => {
+  const cpuLoad = await si.currentLoad();
+  return cpuLoad.currentLoad;
+});
+
+ipcMain.handle('get-memory-usage', async () => {
+  const mem = await si.mem();
+  return {
+    used: Math.round(mem.used / 1024 / 1024), // MB
+    total: Math.round(mem.total / 1024 / 1024), // MB
+    percentage: Math.round((mem.used / mem.total) * 100),
+  };
+});
+
+// Periodic updates
+setInterval(() => {
+  si.currentLoad().then(cpuLoad => {
+    mainWindow.webContents.send('update-cpu', cpuLoad.currentLoad);
+  });
+  
+  si.mem().then(mem => {
+    const usage = {
+      used: Math.round(mem.used / 1024 / 1024),
+      percentage: Math.round((mem.used / mem.total) * 100),
+    };
+    mainWindow.webContents.send('update-memory', usage);
+  });
+}, 1000);
+// React Component - SystemMonitor.jsx
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
+function SystemMonitor() {
+  const [systemInfo, setSystemInfo] = useState(null);
+  const [cpuUsage, setCpuUsage] = useState([]);
+  const [memoryUsage, setMemoryUsage] = useState([]);
+
+  useEffect(() => {
+    // Get initial system info
+    window.electron.getSystemInfo().then(info => {
+      setSystemInfo(info);
+    });
+
+    // Subscribe to real-time updates
+    window.electron.onUpdateCPU((event, usage) => {
+      setCpuUsage(prev => {
+        const newData = [...prev, {
+          time: new Date().toLocaleTimeString(),
+          usage: Math.round(usage),
+        }];
+        
+        // Keep last 60 data points
+        return newData.slice(-60);
+      });
+    });
+
+    window.electron.onUpdateMemory((event, usage) => {
+      setMemoryUsage(prev => {
+        const newData = [...prev, {
+          time: new Date().toLocaleTimeString(),
+          used: usage.used,
+          percentage: usage.percentage,
+        }];
+        
+        return newData.slice(-60);
+      });
+    });
+
+    // Cleanup
+    return () => {
+      // Remove listeners if needed
+    };
+  }, []);
+
+  if (!systemInfo) {
+    return <div>Loading system information...</div>;
+  }
+
+  return (
+    <div className="system-monitor">
+      <div className="system-info">
+        <h2>System Information</h2>
+        <div className="info-grid">
+          <div className="info-item">
+            <span className="label">OS:</span>
+            <span className="value">{systemInfo.platform} {systemInfo.distro}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">Architecture:</span>
+            <span className="value">{systemInfo.arch}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">CPU:</span>
+            <span className="value">{systemInfo.cpuBrand}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">Cores:</span>
+            <span className="value">{systemInfo.cpuCores}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">Memory:</span>
+            <span className="value">{systemInfo.totalMem} GB</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="charts">
+        <div className="chart-container">
+          <h3>CPU Usage</h3>
+          <LineChart width={600} height={300} data={cpuUsage}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" />
+            <YAxis label={{ value: '%', angle: -90, position: 'insideLeft' }} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="usage" stroke="#8884d8" />
+          </LineChart>
+        </div>
+
+        <div className="chart-container">
+          <h3>Memory Usage</h3>
+          <LineChart width={600} height={300} data={memoryUsage}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" />
+            <YAxis label={{ value: 'MB', angle: -90, position: 'insideLeft' }} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="used" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="percentage" stroke="#ff7300" />
+          </LineChart>
+        </div>
+      </div>
+
+      <div className="controls">
+        <button
+          onClick={() => window.electron.getSystemInfo().then(setSystemInfo)}
+        >
+          Refresh System Info
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default SystemMonitor;
+

@@ -1,0 +1,173 @@
+React Native Performance Optimization
+
+Today's Focus: Optimizing Mobile App Performance
+What I Learned: Techniques for smooth mobile experience. Learned:
+
+FlatList optimization
+
+Image optimization
+
+Memory management
+
+Bundle size reduction
+
+Hermes engine
+
+Profiling tools
+
+Practice Example: Optimized List
+
+import React, { useCallback, useMemo } from 'react';
+import {
+  FlatList,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+
+const ITEM_HEIGHT = 100;
+
+// Optimized list item component
+const MemoizedListItem = React.memo(({ item }) => {
+  return (
+    <View style={styles.item}>
+      <Image
+        source={{ uri: item.image }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+      <View style={styles.textContainer}>
+        <Text style={styles.title} numberOfLines={1}>
+          {item.title}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {item.description}
+        </Text>
+      </View>
+    </View>
+  );
+});
+
+// Key extractor
+const keyExtractor = (item) => item.id;
+
+// Get item layout for better performance
+const getItemLayout = (data, index) => ({
+  length: ITEM_HEIGHT,
+  offset: ITEM_HEIGHT * index,
+  index,
+});
+
+export default function OptimizedList() {
+  const [data, setData] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [hasMore, setHasMore] = React.useState(true);
+
+  // Fetch data with pagination
+  const fetchData = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const newData = Array.from({ length: 20 }, (_, i) => ({
+        id: `${page}_${i}`,
+        title: `Item ${(page - 1) * 20 + i + 1}`,
+        description: 'This is a description for the item',
+        image: `https://picsum.photos/200/200?random=${(page - 1) * 20 + i}`,
+      }));
+
+      setData(prev => [...prev, ...newData]);
+      setPage(prev => prev + 1);
+      setHasMore(page < 5); // Load 5 pages only
+      setLoading(false);
+    }, 1000);
+  }, [page, loading, hasMore]);
+
+  // Initial data load
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Render item memoized
+  const renderItem = useCallback(({ item }) => (
+    <MemoizedListItem item={item} />
+  ), []);
+
+  // Render footer for loading indicator
+  const renderFooter = useCallback(() => {
+    if (!loading) return null;
+    
+    return (
+      <View style={styles.footer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }, [loading]);
+
+  // Virtualized list with windowing
+  return (
+    <FlatList
+      data={data}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      getItemLayout={getItemLayout}
+      ListFooterComponent={renderFooter}
+      onEndReached={fetchData}
+      onEndReachedThreshold={0.5}
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      removeClippedSubviews={true}
+      updateCellsBatchingPeriod={50}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.list}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  list: {
+    padding: 10,
+  },
+  item: {
+    flexDirection: 'row',
+    height: ITEM_HEIGHT,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    marginBottom: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+  },
+  textContainer: {
+    flex: 1,
+    marginLeft: 10,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+  },
+  footer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+});

@@ -1,0 +1,31 @@
+WebSockets for Real-time Trading
+
+Today's Focus: Real-time trading with WebSockets and charts.
+What I Learned:
+
+Real-time data streaming
+
+Chart.js with live updates
+
+Order book implementation
+
+TradingView integration
+
+// WebSocket connection for real-time prices
+const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    updatePrice(data.p);
+};
+
+// Update chart
+const ctx = document.getElementById('chart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets: [{ label: 'BTC/USDT', data: [] }] }
+});
+
+function updatePrice(price) {
+    chart.data.datasets[0].data.push({x: Date.now(), y: parseFloat(price)});
+    chart.update('quiet');
+}

@@ -1,0 +1,554 @@
+ Blockchain & Web3 Basics
+
+Today's Focus: Decentralized Application Development
+What I Learned: Web3 and blockchain integration. Learned:
+
+Blockchain fundamentals
+
+Smart contracts basics
+
+Ethereum and Solidity
+
+Web3.js library
+
+MetaMask integration
+
+NFT concepts
+
+Practice Example: Simple DApp
+
+// SimpleStorage.sol
+pragma solidity ^0.8.0;
+
+contract SimpleStorage {
+    uint256 private value;
+    address public owner;
+    
+    event ValueChanged(uint256 newValue, address changedBy);
+    
+    constructor() {
+        owner = msg.sender;
+    }
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+    
+    function setValue(uint256 _value) public onlyOwner {
+        value = _value;
+        emit ValueChanged(_value, msg.sender);
+    }
+    
+    function getValue() public view returns (uint256) {
+        return value;
+    }
+    
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "Invalid address");
+        owner = newOwner;
+    }
+}
+
+// NFTContract.sol
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MyNFT is ERC721, Ownable {
+    uint256 private _nextTokenId;
+    string private _baseTokenURI;
+    
+    mapping(uint256 => string) private _tokenURIs;
+    
+    constructor() ERC721("MyNFT", "MNFT") {
+        _nextTokenId = 1;
+    }
+    
+    function mint(address to, string memory tokenURI) public onlyOwner returns (uint256) {
+        uint256 tokenId = _nextTokenId;
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, tokenURI);
+        _nextTokenId++;
+        return tokenId;
+    }
+    
+    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
+        require(_exists(tokenId), "ERC721URIStorage: URI set of nonexistent token");
+        _tokenURIs[tokenId] = _tokenURI;
+    }
+    
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        return _tokenURIs[tokenId];
+    }
+    
+    function setBaseURI(string memory baseURI) public onlyOwner {
+        _baseTokenURI = baseURI;
+    }
+    
+    function totalSupply() public view returns (uint256) {
+        return _nextTokenId - 1;
+    }
+}
+
+
+// Web3 integration in React
+import Web3 from 'web3';
+import { useState, useEffect } from 'react';
+
+const SimpleStorageABI = [
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newValue",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "changedBy",
+        "type": "address"
+      }
+    ],
+    "name": "ValueChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "getValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "setValue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+function SimpleStorageDApp() {
+  const [web3, setWeb3] = useState(null);
+  const [account, setAccount] = useState('');
+  const [contract, setContract] = useState(null);
+  const [value, setValue] = useState('');
+  const [newValue, setNewValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState([]);
+
+  const contractAddress = '0x1234567890123456789012345678901234567890'; // Your contract address
+
+  useEffect(() => {
+    connectWallet();
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      // Check if MetaMask is installed
+      if (window.ethereum) {
+        const web3Instance = new Web3(window.ethereum);
+        
+        // Request account access
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        
+        setWeb3(web3Instance);
+        setAccount(accounts[0]);
+        
+        // Initialize contract
+        const contractInstance = new web3Instance.eth.Contract(
+          SimpleStorageABI,
+          contractAddress
+        );
+        
+        setContract(contractInstance);
+        
+        // Load current value
+        const currentValue = await contractInstance.methods.getValue().call();
+        setValue(currentValue);
+        
+        // Listen for events
+        contractInstance.events.ValueChanged()
+          .on('data', (event) => {
+            setEvents(prev => [...prev, {
+              newValue: event.returnValues.newValue,
+              changedBy: event.returnValues.changedBy,
+              blockNumber: event.blockNumber,
+            }]);
+          })
+          .on('error', console.error);
+        
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+          setAccount(accounts[0] || '');
+        });
+        
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', () => {
+          window.location.reload();
+        });
+      } else {
+        alert('Please install MetaMask!');
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+    }
+  };
+
+  const getValue = async () => {
+    if (!contract) return;
+    
+    try {
+      const currentValue = await contract.methods.getValue().call();
+      setValue(currentValue);
+    } catch (error) {
+      console.error('Error getting value:', error);
+    }
+  };
+
+  const setStorageValue = async () => {
+    if (!contract || !web3 || !newValue) return;
+    
+    setLoading(true);
+    try {
+      const gasEstimate = await contract.methods.setValue(newValue).estimateGas({
+        from: account,
+      });
+      
+      const receipt = await contract.methods.setValue(newValue).send({
+        from: account,
+        gas: gasEstimate,
+      });
+      
+      console.log('Transaction receipt:', receipt);
+      setNewValue('');
+      await getValue(); // Refresh value
+    } catch (error) {
+      console.error('Error setting value:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkIfOwner = async () => {
+    if (!contract) return false;
+    
+    try {
+      const owner = await contract.methods.owner().call();
+      return owner.toLowerCase() === account.toLowerCase();
+    } catch (error) {
+      console.error('Error checking ownership:', error);
+      return false;
+    }
+  };
+
+  const transferOwnership = async (newOwner) => {
+    if (!contract || !web3) return;
+    
+    setLoading(true);
+    try {
+      const isOwner = await checkIfOwner();
+      if (!isOwner) {
+        alert('Only the owner can transfer ownership');
+        return;
+      }
+      
+      const gasEstimate = await contract.methods.transferOwnership(newOwner).estimateGas({
+        from: account,
+      });
+      
+      const receipt = await contract.methods.transferOwnership(newOwner).send({
+        from: account,
+        gas: gasEstimate,
+      });
+      
+      console.log('Ownership transferred:', receipt);
+    } catch (error) {
+      console.error('Error transferring ownership:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const disconnectWallet = () => {
+    setWeb3(null);
+    setAccount('');
+    setContract(null);
+    setValue('');
+  };
+
+  return (
+    <div className="dapp-container">
+      <div className="wallet-section">
+        {!account ? (
+          <button onClick={connectWallet} className="connect-btn">
+            Connect Wallet
+          </button>
+        ) : (
+          <div className="connected">
+            <p>Connected: {account.slice(0, 6)}...{account.slice(-4)}</p>
+            <button onClick={disconnectWallet} className="disconnect-btn">
+              Disconnect
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <div className="contract-section">
+        <h2>Simple Storage Contract</h2>
+        
+        <div className="current-value">
+          <h3>Current Value: {value}</h3>
+          <button onClick={getValue} disabled={loading}>
+            Refresh Value
+          </button>
+        </div>
+        
+        <div className="set-value">
+          <h3>Set New Value</h3>
+          <input
+            type="number"
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+            placeholder="Enter new value"
+            disabled={loading}
+          />
+          <button onClick={setStorageValue} disabled={loading || !newValue}>
+            {loading ? 'Setting...' : 'Set Value'}
+          </button>
+        </div>
+        
+        <div className="owner-section">
+          <h3>Contract Ownership</h3>
+          <button onClick={() => checkIfOwner().then(isOwner => alert(isOwner ? 'You are the owner' : 'You are NOT the owner'))}>
+            Check Ownership
+          </button>
+        </div>
+      </div>
+      
+      {events.length > 0 && (
+        <div className="events-section">
+          <h3>Recent Events</h3>
+          <ul>
+            {events.slice(-5).map((event, index) => (
+              <li key={index}>
+                Value changed to {event.newValue} by {event.changedBy.slice(0, 6)}... (Block: {event.blockNumber})
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      <div className="network-info">
+        <p>
+          <strong>Network:</strong> {web3 ? 'Connected' : 'Disconnected'}
+        </p>
+        <p>
+          <strong>Contract Address:</strong> {contractAddress.slice(0, 6)}...{contractAddress.slice(-4)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// NFT Marketplace Component
+function NFTMarketplace() {
+  const [web3, setWeb3] = useState(null);
+  const [account, setAccount] = useState('');
+  const [nftContract, setNftContract] = useState(null);
+  const [nfts, setNfts] = useState([]);
+  const [minting, setMinting] = useState(false);
+  const [newNFT, setNewNFT] = useState({ name: '', description: '', image: '' });
+
+  const NFT_CONTRACT_ADDRESS = '0x...';
+  const NFT_ABI = [...]; // Your NFT contract ABI
+
+  const connectWallet = async () => {
+    // Similar to previous connectWallet function
+  };
+
+  const loadNFTs = async () => {
+    if (!nftContract) return;
+    
+    try {
+      const total = await nftContract.methods.totalSupply().call();
+      const nftsArray = [];
+      
+      for (let i = 1; i <= total; i++) {
+        const owner = await nftContract.methods.ownerOf(i).call();
+        const tokenURI = await nftContract.methods.tokenURI(i).call();
+        
+        // Fetch metadata from IPFS
+        const metadata = await fetch(tokenURI).then(res => res.json());
+        
+        nftsArray.push({
+          id: i,
+          owner,
+          ...metadata,
+        });
+      }
+      
+      setNfts(nftsArray);
+    } catch (error) {
+      console.error('Error loading NFTs:', error);
+    }
+  };
+
+  const mintNFT = async () => {
+    if (!nftContract || !web3 || !newNFT.image) return;
+    
+    setMinting(true);
+    try {
+      // Upload image to IPFS (using Pinata or similar)
+      const imageHash = await uploadToIPFS(newNFT.image);
+      
+      // Create metadata
+      const metadata = {
+        name: newNFT.name,
+        description: newNFT.description,
+        image: `ipfs://${imageHash}`,
+      };
+      
+      // Upload metadata to IPFS
+      const metadataHash = await uploadToIPFS(JSON.stringify(metadata));
+      
+      // Mint NFT
+      const gasEstimate = await nftContract.methods
+        .mint(account, `ipfs://${metadataHash}`)
+        .estimateGas({ from: account });
+      
+      const receipt = await nftContract.methods
+        .mint(account, `ipfs://${metadataHash}`)
+        .send({ from: account, gas: gasEstimate });
+      
+      console.log('NFT minted:', receipt);
+      await loadNFTs(); // Refresh list
+      setNewNFT({ name: '', description: '', image: '' });
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+    } finally {
+      setMinting(false);
+    }
+  };
+
+  const uploadToIPFS = async (data) => {
+    // Implement IPFS upload using Pinata, Infura, or Web3.Storage
+    // This is a simplified example
+    const formData = new FormData();
+    formData.append('file', data);
+    
+    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        'pinata_api_key': process.env.PINATA_API_KEY,
+        'pinata_secret_api_key': process.env.PINATA_SECRET_API_KEY,
+      },
+      body: formData,
+    });
+    
+    const result = await response.json();
+    return result.IpfsHash;
+  };
+
+  return (
+    <div className="nft-marketplace">
+      <div className="wallet-section">
+        {/* Wallet connection UI */}
+      </div>
+      
+      <div className="mint-section">
+        <h2>Mint New NFT</h2>
+        <input
+          type="text"
+          placeholder="NFT Name"
+          value={newNFT.name}
+          onChange={(e) => setNewNFT({ ...newNFT, name: e.target.value })}
+        />
+        <textarea
+          placeholder="Description"
+          value={newNFT.description}
+          onChange={(e) => setNewNFT({ ...newNFT, description: e.target.value })}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              setNewNFT({ ...newNFT, image: file });
+            }
+          }}
+        />
+        <button onClick={mintNFT} disabled={minting}>
+          {minting ? 'Minting...' : 'Mint NFT'}
+        </button>
+      </div>
+      
+      <div className="gallery-section">
+        <h2>NFT Gallery</h2>
+        <div className="nft-grid">
+          {nfts.map(nft => (
+            <div key={nft.id} className="nft-card">
+              <img src={nft.image.replace('ipfs://', 'https://ipfs.io/ipfs/')} alt={nft.name} />
+              <h3>{nft.name}</h3>
+              <p>{nft.description}</p>
+              <p>Owner: {nft.owner.slice(0, 6)}...{nft.owner.slice(-4)}</p>
+              <p>Token ID: #{nft.id}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

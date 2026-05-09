@@ -1,0 +1,229 @@
+– React Native Testing
+
+Today's Focus: Testing Mobile Applications
+What I Learned: Ensuring app quality with testing. Learned:
+
+Jest setup for React Native
+
+React Native Testing Library
+
+Component testing
+
+Navigation testing
+
+Async storage mocking
+
+Snapshot testing
+
+Practice Example: Component Tests
+
+// __tests__/Button.test.js
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react-native';
+import Button from '../components/Button';
+
+describe('Button Component', () => {
+  it('renders correctly with title', () => {
+    const { getByText } = render(
+      <Button title="Press Me" onPress={() => {}} />
+    );
+    
+    expect(getByText('Press Me')).toBeTruthy();
+  });
+  
+  it('calls onPress when pressed', () => {
+    const mockOnPress = jest.fn();
+    const { getByText } = render(
+      <Button title="Press Me" onPress={mockOnPress} />
+    );
+    
+    fireEvent.press(getByText('Press Me'));
+    expect(mockOnPress).toHaveBeenCalledTimes(1);
+  });
+  
+  it('shows loading indicator when loading', () => {
+    const { getByTestId } = render(
+      <Button title="Press Me" onPress={() => {}} loading={true} />
+    );
+    
+    expect(getByTestId('loading-indicator')).toBeTruthy();
+  });
+  
+  it('is disabled when disabled prop is true', () => {
+    const mockOnPress = jest.fn();
+    const { getByText } = render(
+      <Button title="Press Me" onPress={mockOnPress} disabled={true} />
+    );
+    
+    fireEvent.press(getByText('Press Me'));
+    expect(mockOnPress).not.toHaveBeenCalled();
+  });
+});
+
+// __tests__/LoginScreen.test.js
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import LoginScreen from '../screens/LoginScreen';
+import { AuthProvider } from '../contexts/AuthContext';
+
+// Mock navigation
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: () => ({
+    navigate: mockNavigate,
+  }),
+}));
+
+// Mock auth context
+const mockLogin = jest.fn();
+jest.mock('../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    login: mockLogin,
+    loading: false,
+    error: null,
+  }),
+}));
+
+describe('LoginScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  it('renders login form', () => {
+    const { getByPlaceholderText, getByText } = render(
+      <NavigationContainer>
+        <LoginScreen />
+      </NavigationContainer>
+    );
+    
+    expect(getByPlaceholderText('Email')).toBeTruthy();
+    expect(getByPlaceholderText('Password')).toBeTruthy();
+    expect(getByText('Login')).toBeTruthy();
+  });
+  
+  it('validates email format', async () => {
+    const { getByPlaceholderText, getByText, queryByText } = render(
+      <NavigationContainer>
+        <LoginScreen />
+      </NavigationContainer>
+    );
+    
+    const emailInput = getByPlaceholderText('Email');
+    const passwordInput = getByPlaceholderText('Password');
+    const loginButton = getByText('Login');
+    
+    // Invalid email
+    fireEvent.changeText(emailInput, 'invalid-email');
+    fireEvent.changeText(passwordInput, 'password123');
+    fireEvent.press(loginButton);
+    
+    await waitFor(() => {
+      expect(queryByText('Invalid email format')).toBeTruthy();
+    });
+  });
+  
+  it('calls login function with credentials', async () => {
+    const { getByPlaceholderText, getByText } = render(
+      <NavigationContainer>
+        <LoginScreen />
+      </NavigationContainer>
+    );
+    
+    const emailInput = getByPlaceholderText('Email');
+    const passwordInput = getByPlaceholderText('Password');
+    const loginButton = getByText('Login');
+    
+    fireEvent.changeText(emailInput, 'test@example.com');
+    fireEvent.changeText(passwordInput, 'password123');
+    fireEvent.press(loginButton);
+    
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+    });
+  });
+  
+  it('navigates to home on successful login', async () => {
+    mockLogin.mockResolvedValueOnce({ success: true });
+    
+    const { getByPlaceholderText, getByText } = render(
+      <NavigationContainer>
+        <LoginScreen />
+      </NavigationContainer>
+    );
+    
+    const emailInput = getByPlaceholderText('Email');
+    const passwordInput = getByPlaceholderText('Password');
+    const loginButton = getByText('Login');
+    
+    fireEvent.changeText(emailInput, 'test@example.com');
+    fireEvent.changeText(passwordInput, 'password123');
+    fireEvent.press(loginButton);
+    
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('Home');
+    });
+  });
+});
+
+// __tests__/utils.test.js - Utility functions
+import { formatDate, calculateTotal, validateEmail } from '../utils';
+
+describe('Utility Functions', () => {
+  describe('formatDate', () => {
+    it('formats date correctly', () => {
+      const date = new Date('2024-01-15');
+      expect(formatDate(date)).toBe('Jan 15, 2024');
+    });
+    
+    it('handles invalid date', () => {
+      expect(formatDate('invalid')).toBe('Invalid Date');
+    });
+  });
+  
+  describe('calculateTotal', () => {
+    it('calculates total correctly', () => {
+      const items = [
+        { price: 10, quantity: 2 },
+        { price: 5, quantity: 3 },
+      ];
+      expect(calculateTotal(items)).toBe(35);
+    });
+    
+    it('returns 0 for empty array', () => {
+      expect(calculateTotal([])).toBe(0);
+    });
+  });
+  
+  describe('validateEmail', () => {
+    it('returns true for valid email', () => {
+      expect(validateEmail('test@example.com')).toBe(true);
+      expect(validateEmail('user.name+tag@domain.co.uk')).toBe(true);
+    });
+    
+    it('returns false for invalid email', () => {
+      expect(validateEmail('invalid-email')).toBe(false);
+      expect(validateEmail('@domain.com')).toBe(false);
+      expect(validateEmail('user@.com')).toBe(false);
+    });
+  });
+});
+
+// Integration test example
+describe('Shopping Cart Flow', () => {
+  it('adds item to cart and checks out', async () => {
+    // Render product screen
+    // Add product to cart
+    // Navigate to cart screen
+    // Verify item in cart
+    // Proceed to checkout
+    // Fill checkout form
+    // Place order
+    // Verify success message
+  });
+});
+

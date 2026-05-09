@@ -1,0 +1,335 @@
+Machine Learning with TensorFlow.js
+
+Today's Focus: AI Integration in Web Apps
+What I Learned: Adding machine learning capabilities. Learned:
+
+TensorFlow.js basics
+
+Pre-trained models
+
+Custom model training
+
+Image classification
+
+Natural language processing
+
+Model deployment
+
+Practice Example: Image Classifier
+import * as tf from '@tensorflow/tfjs';
+import * as mobilenet from '@tensorflow-models/mobilenet';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
+
+class ImageClassifier {
+  constructor() {
+    this.model = null;
+    this.objectDetectionModel = null;
+    this.initialized = false;
+  }
+
+  async initialize() {
+    try {
+      // Load MobileNet for image classification
+      this.model = await mobilenet.load({
+        version: 2,
+        alpha: 1.0,
+      });
+      
+      // Load COCO-SSD for object detection
+      this.objectDetectionModel = await cocoSsd.load();
+      
+      this.initialized = true;
+      console.log('Models loaded successfully');
+    } catch (error) {
+      console.error('Error loading models:', error);
+      throw error;
+    }
+  }
+
+  async classifyImage(imageElement) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
+    try {
+      // Classify image
+      const predictions = await this.model.classify(imageElement);
+      
+      return predictions.map(pred => ({
+        className: pred.className,
+        probability: (pred.probability * 100).toFixed(2) + '%',
+      }));
+    } catch (error) {
+      console.error('Error classifying image:', error);
+      throw error;
+    }
+  }
+
+  async detectObjects(imageElement) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
+    try {
+      // Detect objects
+      const predictions = await this.objectDetectionModel.detect(imageElement);
+      
+      return predictions.map(pred => ({
+        class: pred.class,
+        score: (pred.score * 100).toFixed(2) + '%',
+        bbox: pred.bbox, // [x, y, width, height]
+      }));
+    } catch (error) {
+      console.error('Error detecting objects:', error);
+      throw error;
+    }
+  }
+
+  // Transfer learning - custom classification
+  async trainCustomModel(images, labels) {
+    // Create a simple model for transfer learning
+    const model = tf.sequential();
+    
+    // Use MobileNet as base
+    const baseModel = await mobilenet.load();
+    const layer = baseModel.getLayer('conv_pw_13_relu');
+    const truncatedModel = tf.model({
+      inputs: baseModel.inputs,
+      outputs: layer.output
+    });
+    
+    // Freeze base model layers
+    truncatedModel.trainable = false;
+    
+    // Add custom layers
+    model.add(truncatedModel);
+    model.add(tf.layers.globalAveragePooling2d());
+    model.add(tf.layers.dense({ units: 128, activation: 'relu' }));
+    model.add(tf.layers.dropout({ rate: 0.5 }));
+    model.add(tf.layers.dense({ units: labels.length, activation: 'softmax' }));
+    
+    // Compile model
+    model.compile({
+      optimizer: tf.train.adam(0.0001),
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy']
+    });
+    
+    // Prepare training data
+    const xs = tf.stack(images);
+    const ys = tf.oneHot(tf.tensor1d(labels, 'int32'), labels.length);
+    
+    // Train model
+    await model.fit(xs, ys, {
+      epochs: 10,
+      batchSize: 32,
+      validationSplit: 0.2,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          console.log(`Epoch ${epoch}: loss = ${logs.loss}, accuracy = ${logs.acc}`);
+        }
+      }
+    });
+    
+    return model;
+  }
+
+  // Sentiment analysis
+  async analyzeSentiment(text) {
+    // Load pre-trained sentiment analysis model
+    const model = await tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/model.json');
+    
+    // Tokenize text
+    const metadata = await fetch('https://storage.googleapis.com/tfjs-models/tfjs/sentiment_cnn_v1/metadata.json').then(res => res.json());
+    
+    const sequence = text.toLowerCase()
+      .replace(/[^a-zA-Z\s]/g, '')
+      .split(' ')
+      .map(word => metadata.word_index[word] || 2) // 2 is OOV index
+      .filter(index => index !== 2)
+      .slice(0, metadata.max_len);
+    
+    // Pad sequence
+    const paddedSequence = tf.tensor2d([sequence.concat(new Array(metadata.max_len - sequence.length).fill(0))]);
+    
+    // Predict
+    const prediction = model.predict(paddedSequence);
+    const score = prediction.dataSync()[0];
+    
+    return {
+      score: score.toFixed(4),
+      sentiment: score > 0.5 ? 'Positive' : 'Negative',
+      confidence: Math.abs(score - 0.5) * 2 * 100,
+    };
+  }
+
+  // Style transfer
+  async applyStyleTransfer(contentImage, styleImage) {
+    // Load style transfer model
+    const model = await tf.loadGraphModel('https://tfhub.dev/google/magenta/arbitrary-image-stylization-v1-256/2');
+    
+    // Preprocess images
+    const contentTensor = this.preprocessImage(contentImage);
+    const styleTensor = this.preprocessImage(styleImage);
+    
+    // Apply style transfer
+    const stylizedTensor = model.predict([contentTensor, styleTensor]);
+    
+    // Postprocess and return
+    return this.postprocessImage(stylizedTensor);
+  }
+
+  preprocessImage(img) {
+    return tf.browser.fromPixels(img)
+      .toFloat()
+      .div(tf.scalar(255))
+      .expandDims();
+  }
+
+  postprocessImage(tensor) {
+    return tf.tidy(() => {
+      const t = tensor.squeeze();
+      return tf.add(tf.mul(t, tf.scalar(255)), tf.scalar(0.5))
+        .clipByValue(0, 255)
+        .cast('int32');
+    });
+  }
+}
+
+// React Component
+function MLImageClassifier() {
+  const [classifier] = useState(() => new ImageClassifier());
+  const [imageSrc, setImageSrc] = useState('');
+  const [predictions, setPredictions] = useState([]);
+  const [objects, setObjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const imageRef = useRef(null);
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImageSrc(e.target.result);
+      setPredictions([]);
+      setObjects([]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClassify = async () => {
+    if (!imageSrc || !imageRef.current) return;
+
+    setLoading(true);
+    try {
+      await classifier.initialize();
+      
+      const imgPredictions = await classifier.classifyImage(imageRef.current);
+      setPredictions(imgPredictions);
+      
+      const detectedObjects = await classifier.detectObjects(imageRef.current);
+      setObjects(detectedObjects);
+    } catch (error) {
+      console.error('Classification error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const drawBoundingBoxes = () => {
+    if (!objects.length || !imageRef.current) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = imageRef.current;
+    
+    canvas.width = img.width;
+    canvas.height = img.height;
+    
+    // Draw original image
+    ctx.drawImage(img, 0, 0);
+    
+    // Draw bounding boxes
+    objects.forEach(obj => {
+      const [x, y, width, height] = obj.bbox;
+      
+      // Draw rectangle
+      ctx.strokeStyle = '#FF0000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+      
+      // Draw label
+      ctx.fillStyle = '#FF0000';
+      ctx.font = '16px Arial';
+      ctx.fillText(`${obj.class} (${obj.score})`, x, y > 20 ? y - 5 : y + 20);
+    });
+    
+    return canvas.toDataURL();
+  };
+
+  return (
+    <div className="ml-classifier">
+      <div className="controls">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          disabled={loading}
+        />
+        <button onClick={handleClassify} disabled={!imageSrc || loading}>
+          {loading ? 'Processing...' : 'Classify Image'}
+        </button>
+      </div>
+      
+      <div className="results-container">
+        {imageSrc && (
+          <div className="image-section">
+            <h3>Input Image</h3>
+            <img
+              ref={imageRef}
+              src={imageSrc}
+              alt="To classify"
+              style={{ display: 'none' }}
+              onLoad={() => imageRef.current && console.log('Image loaded')}
+            />
+            <img src={imageSrc} alt="Preview" className="preview-image" />
+            
+            {objects.length > 0 && (
+              <div>
+                <h4>Object Detection</h4>
+                <img src={drawBoundingBoxes()} alt="With bounding boxes" />
+              </div>
+            )}
+          </div>
+        )}
+        
+        {predictions.length > 0 && (
+          <div className="predictions">
+            <h3>Classification Results</h3>
+            <ul>
+              {predictions.map((pred, index) => (
+                <li key={index}>
+                  <strong>{pred.className}</strong>: {pred.probability}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        {objects.length > 0 && (
+          <div className="objects">
+            <h3>Detected Objects</h3>
+            <ul>
+              {objects.map((obj, index) => (
+                <li key={index}>
+                  {obj.class} - {obj.score}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

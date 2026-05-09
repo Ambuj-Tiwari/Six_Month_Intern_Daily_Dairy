@@ -1,0 +1,145 @@
+React Native Deployment
+
+Today's Focus: Building and Deploying Mobile Apps
+What I Learned: Preparing apps for production. Learned:
+
+Building for iOS and Android
+
+App Store Connect setup
+
+Google Play Console setup
+
+Code signing
+
+Over-the-air updates
+
+App store optimization
+
+Practice Example: Build Configuration
+
+// package.json scripts
+{
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint .",
+    "build:android:dev": "cd android && ./gradlew assembleDebug",
+    "build:android:prod": "cd android && ./gradlew assembleRelease",
+    "build:ios": "cd ios && xcodebuild -workspace MyApp.xcworkspace -scheme MyApp -configuration Release",
+    "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "bundle:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios"
+  }
+}
+
+// app.json configuration
+{
+  "name": "MyApp",
+  "displayName": "My Awesome App",
+  "expo": {
+    "name": "My Awesome App",
+    "slug": "my-awesome-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.company.myapp",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow access to photo library to upload images",
+        "NSCameraUsageDescription": "Allow access to camera to take photos",
+        "NSLocationWhenInUseUsageDescription": "Allow access to location for better user experience",
+        "NSMicrophoneUsageDescription": "Allow access to microphone for video recording"
+      }
+    },
+    "android": {
+      "package": "com.company.myapp",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "project-id-here"
+      }
+    }
+  }
+}
+
+// .env file for environment variables
+APP_NAME="My Awesome App"
+API_URL="https://api.myapp.com"
+GOOGLE_MAPS_API_KEY="your-api-key-here"
+ONESIGNAL_APP_ID="your-onesignal-app-id"
+
+// eas.json for EAS Build
+{
+  "cli": {
+    "version": ">= 3.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "enterpriseProvisioning": "universal"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./android-service-account-key.json",
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppId": "1234567890",
+        "appleTeamId": "TEAM123456"
+      }
+    }
+  }
+}

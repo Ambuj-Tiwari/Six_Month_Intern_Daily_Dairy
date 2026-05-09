@@ -1,0 +1,105 @@
+React Native APIs & Device Features
+
+Today's Focus: Accessing Native Device Features
+What I Learned: Using device capabilities in React Native. Learned:
+
+Camera access
+
+Location services
+
+Push notifications
+
+Local storage (AsyncStorage)
+
+Biometric authentication
+
+File system access
+
+Practice Example: Camera & Location
+import React, { useState } from 'react';
+import { View, Button, Image, Alert, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+
+export default function DeviceFeatures() {
+  const [image, setImage] = useState(null);
+  const [location, setLocation] = useState(null);
+
+  const requestPermissions = async () => {
+    // Camera permission
+    const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+    const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    // Location permission
+    const locationStatus = await Location.requestForegroundPermissionsAsync();
+    
+    if (
+      cameraStatus.status !== 'granted' ||
+      galleryStatus.status !== 'granted' ||
+      locationStatus.status !== 'granted'
+    ) {
+      Alert.alert('Permission required', 'Please enable all permissions in settings');
+      return false;
+    }
+    return true;
+  };
+
+  const takePhoto = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const pickImage = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const getLocation = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    let location = await Location.getCurrentPositionAsync({});
+    setLocation(location.coords);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Button title="Take Photo" onPress={takePhoto} />
+      <Button title="Pick from Gallery" onPress={pickImage} />
+      <Button title="Get Location" onPress={getLocation} />
+      
+      {image && (
+        <Image source={{ uri: image }} style={styles.image} />
+      )}
+      
+      {location && (
+        <View style={styles.locationContainer}>
+          <Text>Latitude: {location.latitude}</Text>
+          <Text>Longitude: {location.longitude}</Text>
+        </View>
+      )}
+    </View>
+  );
+}

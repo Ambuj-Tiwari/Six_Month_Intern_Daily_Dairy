@@ -1,0 +1,287 @@
+ React Native Animations
+
+Today's Focus: Smooth Animations in Mobile Apps
+What I Learned: Creating engaging animations. Learned:
+
+Animated API basics
+
+LayoutAnimation
+
+Reanimated library (v2)
+
+Gesture handling
+
+Performance optimization
+
+Complex animation sequences
+
+Practice Example: Interactive Animations
+
+import React, { useRef } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withRepeat,
+  Easing,
+  useAnimatedGestureHandler,
+  runOnJS,
+} from 'react-native-reanimated';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+
+const { width } = Dimensions.get('window');
+
+export default function AnimationsScreen() {
+  // Basic opacity animation
+  const opacity = useSharedValue(1);
+  
+  const fadeStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
+
+  // Scale animation with spring
+  const scale = useSharedValue(1);
+  
+  const scaleStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  // Position animation
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  
+  const positionStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+    };
+  });
+
+  // Rotation animation
+  const rotation = useSharedValue(0);
+  
+  const rotationStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotate: `${rotation.value}deg` }],
+    };
+  });
+
+  const handleFade = () => {
+    opacity.value = withTiming(opacity.value === 1 ? 0.3 : 1, {
+      duration: 300,
+      easing: Easing.ease,
+    });
+  };
+
+  const handleScale = () => {
+    scale.value = withSpring(scale.value === 1 ? 1.5 : 1, {
+      damping: 10,
+      stiffness: 100,
+    });
+  };
+
+  const handleMove = () => {
+    translateX.value = withSpring(Math.random() * 200 - 100);
+    translateY.value = withSpring(Math.random() * 200 - 100);
+  };
+
+  const handleRotate = () => {
+    rotation.value = withSpring(rotation.value + 45);
+  };
+
+  // Continuous animation
+  const startContinuousAnimation = () => {
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      -1, // Infinite repeats
+      false // Don't reverse
+    );
+  };
+
+  // Drag and drop animation
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  
+  const dragStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: dragX.value },
+        { translateY: dragY.value },
+      ],
+    };
+  });
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, ctx) => {
+      ctx.startX = dragX.value;
+      ctx.startY = dragY.value;
+    },
+    onActive: (event, ctx) => {
+      dragX.value = ctx.startX + event.translationX;
+      dragY.value = ctx.startY + event.translationY;
+    },
+    onEnd: (event) => {
+      // Snap back to original position with spring
+      dragX.value = withSpring(0);
+      dragY.value = withSpring(0);
+    },
+  });
+
+  return (
+    <View style={styles.container}>
+      {/* Basic Animations */}
+      <View style={styles.row}>
+        <Animated.View style={[styles.box, fadeStyle]}>
+          <Text>Fade</Text>
+        </Animated.View>
+        
+        <Animated.View style={[styles.box, scaleStyle]}>
+          <Text>Scale</Text>
+        </Animated.View>
+      </View>
+      
+      <View style={styles.row}>
+        <Animated.View style={[styles.box, positionStyle]}>
+          <Text>Move</Text>
+        </Animated.View>
+        
+        <Animated.View style={[styles.box, rotationStyle]}>
+          <Text>Rotate</Text>
+        </Animated.View>
+      </View>
+      
+      {/* Control Buttons */}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.button} onPress={handleFade}>
+          <Text>Toggle Fade</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.button} onPress={handleScale}>
+          <Text>Toggle Scale</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.button} onPress={handleMove}>
+          <Text>Move Random</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.button} onPress={handleRotate}>
+          <Text>Rotate 45°</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.button} onPress={startContinuousAnimation}>
+          <Text>Spin Continuously</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Drag and Drop */}
+      <View style={styles.dragContainer}>
+        <PanGestureHandler onGestureEvent={gestureHandler}>
+          <Animated.View style={[styles.draggableBox, dragStyle]}>
+            <Text>Drag Me</Text>
+          </Animated.View>
+        </PanGestureHandler>
+      </View>
+      
+      {/* Complex Animation: Loading Spinner */}
+      <LoadingSpinner />
+    </View>
+  );
+}
+
+// Custom animated component
+function LoadingSpinner() {
+  const rotation = useSharedValue(0);
+  
+  React.useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(360, {
+        duration: 1000,
+        easing: Easing.linear,
+      }),
+      -1
+    );
+  }, []);
+  
+  const spinnerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotate: `${rotation.value}deg` }],
+    };
+  });
+  
+  return (
+    <View style={styles.spinnerContainer}>
+      <Animated.View style={[styles.spinner, spinnerStyle]} />
+      <Text style={styles.spinnerText}>Loading...</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  box: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  buttonRow: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 5,
+    margin: 5,
+  },
+  dragContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  draggableBox: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  spinnerContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  spinner: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 5,
+    borderColor: '#007AFF',
+    borderTopColor: 'transparent',
+  },
+  spinnerText: {
+    marginTop: 10,
+    color: '#666',
+  },
+});

@@ -1,0 +1,23 @@
+ Payment Gateway Integration
+
+Today's Focus: Adding payments with Razorpay/Stripe.
+What I Learned:
+
+Payment flow implementation
+
+Webhook handling
+
+Refund processing
+
+Code:
+// Razorpay integration
+const options = {
+    key: 'rzp_test_key',
+    amount: 50000, // ₹500
+    currency: 'INR',
+    handler: function(response) {
+        alert('Payment ID: ' + response.razorpay_payment_id);
+    }
+};
+const rzp = new Razorpay(options);
+rzp.open();
