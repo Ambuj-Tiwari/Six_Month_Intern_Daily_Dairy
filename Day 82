@@ -1,0 +1,25 @@
+Web Workers for Heavy Tasks
+
+Today's Focus: Offloading heavy JS to background threads.
+What I Learned:
+
+Worker creation and communication
+
+Data processing in background
+
+Performance improvement
+
+Code:
+
+javascript
+// main.js
+const worker = new Worker('worker.js');
+worker.postMessage([1,2,3,4,5]);
+worker.onmessage = (e) => console.log('Result:', e.data);
+
+// worker.js
+self.onmessage = (e) => {
+    const result = e.data.reduce((a,b) => a + b, 0);
+    self.postMessage(result);
+};
+

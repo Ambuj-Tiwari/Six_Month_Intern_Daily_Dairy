@@ -1,0 +1,20 @@
+Web Accessibility (a11y)
+
+Today's Focus: Making sites accessible.
+What I Learned:
+
+ARIA attributes
+
+Keyboard navigation
+
+Screen reader compatibility
+
+Code:
+
+html
+<button aria-label="Close menu" onclick="closeMenu()">×</button>
+<nav role="navigation">
+    <ul>
+        <li><a href="#main" tabindex="0">Skip to main</a></li>
+    </ul>
+</nav>

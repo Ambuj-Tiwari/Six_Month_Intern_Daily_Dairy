@@ -1,0 +1,22 @@
+– Internationalization (i18n)
+
+Today's Focus: Multi-language support.
+What I Learned:
+
+i18n library setup
+
+Language switching
+
+RTL support
+
+Code:
+
+javascript
+import i18n from 'i18next';
+i18n.init({
+    resources: {
+        en: { translation: { welcome: "Welcome" } },
+        hi: { translation: { welcome: "स्वागत है" } }
+    }
+});
+console.log(i18n.t('welcome'));

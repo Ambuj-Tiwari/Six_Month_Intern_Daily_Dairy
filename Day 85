@@ -1,0 +1,25 @@
+SEO Optimization
+
+Today's Focus: Search engine optimization.
+What I Learned:
+
+Meta tags
+
+Structured data
+
+Sitemap generation
+
+Code:
+
+html
+<head>
+    <title>Best Products | MyStore</title>
+    <meta name="description" content="Buy best products online">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Phone"
+    }
+    </script>
+</head>

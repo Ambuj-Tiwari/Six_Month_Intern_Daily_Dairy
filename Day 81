@@ -1,0 +1,23 @@
+Advanced CSS Animations
+
+Today's Focus: Keyframes, transitions, 3D transforms.
+What I Learned:
+
+@keyframes animations
+
+CSS 3D transforms
+
+Animation performance
+
+Code:
+
+css
+/* 3D card flip */
+.card {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+.card.flipped {
+    transform: rotateY(180deg);
+}
+
