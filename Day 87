@@ -1,0 +1,19 @@
+ WebRTC Video Chat
+
+Today's Focus: Peer-to-peer video calls.
+What I Learned:
+
+Media devices access
+
+Peer connection setup
+
+Signaling server
+
+Code:
+
+javascript
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+        document.getElementById('localVideo').srcObject = stream;
+        // Setup peer connection
+    });

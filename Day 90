@@ -1,0 +1,22 @@
+Micro-frontends
+
+Today's Focus: Modular frontend architecture.
+What I Learned:
+
+Module Federation
+
+Independent deployment
+
+Shared dependencies
+
+Code:
+
+javascript
+// webpack.config.js
+new ModuleFederationPlugin({
+    name: 'app1',
+    exposes: {
+        './Button': './src/Button'
+    }
+});
+

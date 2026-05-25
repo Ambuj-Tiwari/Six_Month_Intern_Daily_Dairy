@@ -1,0 +1,22 @@
+WebAssembly with C++
+
+Today's Focus: High-performance C++ in browser.
+What I Learned:
+
+Emscripten compilation
+
+C++ to WASM
+
+JS-WASM interop
+
+Code:
+
+cpp
+// add.cpp
+extern "C" {
+    int add(int a, int b) {
+        return a + b;
+    }
+}
+// Terminal: emcc add.cpp -o add.js -s EXPORTED_FUNCTIONS="['_add']"
+

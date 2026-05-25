@@ -1,0 +1,23 @@
+GraphQL Subscriptions
+
+Today's Focus: Real-time GraphQL.
+What I Learned:
+
+Subscription setup
+
+Real-time data push
+
+Apollo Client integration
+
+Code:
+
+javascript
+const SUBSCRIPTION = gql`
+    subscription OnMessageAdded {
+        messageAdded {
+            id
+            content
+        }
+    }
+`;
+const { data } = useSubscription(SUBSCRIPTION);
