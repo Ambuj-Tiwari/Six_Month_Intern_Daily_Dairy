@@ -1,0 +1,32 @@
+Kubernetes Deployment
+
+Today's Focus: Container orchestration.
+What I Learned:
+
+Pods and Services
+
+Deployment YAML
+
+Scaling and updates
+
+Code:
+
+yaml
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest

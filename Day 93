@@ -1,0 +1,21 @@
+Serverless Functions (AWS Lambda)
+
+Today's Focus: Cloud functions.
+What I Learned:
+
+Lambda setup
+
+API Gateway integration
+
+Environment variables
+
+Code:
+
+javascript
+// lambda.js
+exports.handler = async (event) => {
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Hello from Lambda!' })
+    };
+};

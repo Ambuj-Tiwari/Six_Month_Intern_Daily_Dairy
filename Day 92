@@ -1,0 +1,21 @@
+ WebAuthn (Passwordless Auth)
+
+Today's Focus: Biometric authentication.
+What I Learned:
+
+WebAuthn API
+
+Public key credentials
+
+Security keys
+
+Code:
+
+javascript
+navigator.credentials.create({
+    publicKey: {
+        challenge: new Uint8Array([/* random bytes */]),
+        rp: { name: "My Site" },
+        user: { id: new Uint8Array([/* user id */]), name: "user@example.com" }
+    }
+});
