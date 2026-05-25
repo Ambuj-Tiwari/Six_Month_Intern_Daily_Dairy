@@ -1,0 +1,18 @@
+ Security Auditing
+
+Today's Focus: Security best practices.
+What I Learned:
+
+OWASP Top 10
+
+Dependency scanning
+
+Penetration testing basics
+
+Code:
+
+bash
+# Run security audit
+npm audit
+# Dependency check
+npx snyk test

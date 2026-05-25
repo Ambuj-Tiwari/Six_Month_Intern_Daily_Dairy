@@ -1,0 +1,22 @@
+nterview Preparation
+
+Today's Focus: Coding interview practice.
+What I Learned:
+
+DSA problems
+
+System design basics
+
+Behavioral questions
+
+Code:
+
+javascript
+// Common interview problem
+function reverseString(str) {
+    return str.split('').reverse().join('');
+}
+// System design: URL shortener
+// 1. Generate unique ID
+// 2. Store mapping in DB
+// 3. Redirect on access

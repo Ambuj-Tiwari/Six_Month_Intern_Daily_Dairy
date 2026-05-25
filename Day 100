@@ -1,0 +1,31 @@
+Portfolio Website
+
+Today's Focus: Build personal portfolio.
+What I Learned:
+
+Showcase projects
+
+SEO optimization
+
+Contact form integration
+
+Code:
+
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Portfolio</title>
+</head>
+<body>
+    <h1>John Doe - Full Stack Developer</h1>
+    <section id="projects">
+        <h2>Projects</h2>
+        <!-- Project cards -->
+    </section>
+    <form id="contact">
+        <input type="email" placeholder="Your email">
+        <button>Contact Me</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,36 @@
+CI/CD with Jenkins
+
+Today's Focus: Automation pipeline.
+What I Learned:
+
+Jenkins setup
+
+Pipeline as code
+
+Automated testing
+
+Code:
+
+groovy
+// Jenkinsfile
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'npm install'
+                sh 'npm run build'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'npm run deploy'
+            }
+        }
+    }
+}

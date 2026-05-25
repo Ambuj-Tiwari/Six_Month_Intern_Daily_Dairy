@@ -1,0 +1,18 @@
+Performance Monitoring
+
+Today's Focus: App monitoring and metrics.
+What I Learned:
+
+Lighthouse audits
+
+New Relic setup
+
+Error tracking
+
+Code:
+
+javascript
+// New Relic browser snippet
+window.NREUM = window.NREUM || {};
+NREUM.init = { /* config */ };
+
