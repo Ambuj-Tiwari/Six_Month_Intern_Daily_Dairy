@@ -1,0 +1,34 @@
+Technology Stack Selection
+Date: [Date]
+Objective: Choose appropriate technologies for development
+Activities:
+
+Evaluated technology options:
+
+Backend: PHP (selected for simplicity and wide support)
+
+Database: MySQL (robust, open-source)
+
+Frontend: HTML5, CSS3, JavaScript
+
+Additional: Bootstrap for responsive design
+
+Installed development environment:
+
+XAMPP 8.2.4 (Apache, MySQL, PHP)
+
+Visual Studio Code with PHP extensions
+
+Git for version control
+
+Tested localhost setup with sample PHP script
+
+Technology Stack Finalized:
+
+Frontend: HTML, CSS, JavaScript, Bootstrap 5
+
+Backend: PHP 8.2
+
+Database: MySQL 8.0
+
+Tools: XAMPP, VS Code, phpMyAdmin

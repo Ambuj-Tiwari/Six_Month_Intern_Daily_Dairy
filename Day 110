@@ -1,0 +1,42 @@
+Database Design
+Date: [Date]
+Objective: Design efficient database schema
+Activities:
+
+Identified core entities:
+
+Users (admins, managers)
+
+Students
+
+Hostels
+
+Meal Transactions
+
+Bills
+
+Created Entity-Relationship Diagram
+
+Normalized database to 3NF
+
+Defined relationships:
+
+One-to-Many: Hostel → Students
+
+One-to-Many: Student → Meal_Entries
+
+One-to-Many: Student → Bills
+
+Table Structures Planned:
+
+users - User authentication
+
+students - Student information
+
+hostels - Hostel details
+
+student_meal_details - Daily meal records
+
+mess_register - Mess transactions
+
+bills - Billing information

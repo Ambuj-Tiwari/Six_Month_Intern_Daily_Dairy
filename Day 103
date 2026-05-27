@@ -1,0 +1,224 @@
+ E-commerce: User Authentication & Orders
+
+Today's Focus: User model, JWT auth, order creation
+What I Learned: Secure auth, order processing flow
+
+Code:
+// models/User.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  phone: String,
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    country: String,
+    zipCode: String
+  },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  createdAt: { type: Date, default: Date.now },
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
+});
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+// Generate JWT token
+userSchema.methods.generateAuthToken = function() {
+  return jwt.sign(
+    { id: this._id, email: this.email, role: this.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+};
+
+module.exports = mongoose.model('User', userSchema);
+
+// models/Order.js
+const mongoose = require('mongoose');
+
+const orderItemSchema = new mongoose.Schema({
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  quantity: { type: Number, required: true },
+  price: { type: Number, required: true },
+  name: String // Product name at time of order
+});
+
+const orderSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  items: [orderItemSchema],
+  shippingAddress: {
+    street: String,
+    city: String,
+    state: String,
+    country: String,
+    zipCode: String
+  },
+  paymentMethod: { type: String, enum: ['COD', 'Card', 'UPI'], required: true },
+  paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
+  orderStatus: { 
+    type: String, 
+    enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'], 
+    default: 'Processing' 
+  },
+  totalAmount: { type: Number, required: true },
+  tax: { type: Number, default: 0 },
+  shippingFee: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
+  finalAmount: { type: Number, required: true },
+  orderDate: { type: Date, default: Date.now },
+  deliveredDate: Date,
+  trackingNumber: String
+});
+
+module.exports = mongoose.model('Order', orderSchema);
+
+// routes/orderRoutes.js
+const express = require('express');
+const router = express.Router();
+const Order = require('../models/Order');
+const Cart = require('../models/Cart');
+const Product = require('../models/Product');
+const auth = require('../middleware/auth');
+
+// Create order from cart
+router.post('/', auth, async (req, res) => {
+  try {
+    const { shippingAddress, paymentMethod } = req.body;
+    
+    // Get user's cart
+    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
+    }
+    
+    // Check stock availability
+    for (const item of cart.items) {
+      const product = item.product;
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ 
+          error: `Insufficient stock for ${product.name}` 
+        });
+      }
+    }
+    
+    // Calculate totals
+    const subtotal = cart.calculateTotal();
+    const tax = subtotal * 0.18; // 18% GST
+    const shippingFee = subtotal > 1000 ? 0 : 50;
+    const discount = 0; // Can add coupon logic here
+    const finalAmount = subtotal + tax + shippingFee - discount;
+    
+    // Create order items
+    const orderItems = cart.items.map(item => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      price: item.price,
+      name: item.product.name
+    }));
+    
+    // Create order
+    const order = new Order({
+      user: req.user.id,
+      items: orderItems,
+      shippingAddress,
+      paymentMethod,
+      totalAmount: subtotal,
+      tax,
+      shippingFee,
+      discount,
+      finalAmount
+    });
+    
+    // Update product stock
+    for (const item of cart.items) {
+      await Product.findByIdAndUpdate(item.product._id, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+    
+    // Clear cart
+    cart.items = [];
+    await cart.save();
+    
+    await order.save();
+    
+    res.status(201).json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's orders
+router.get('/my-orders', auth, async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user.id })
+      .sort({ orderDate: -1 })
+      .populate('items.product');
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single order
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const order = await Order.findOne({ 
+      _id: req.params.id, 
+      user: req.user.id 
+    }).populate('items.product');
+    
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Cancel order
+router.put('/:id/cancel', auth, async (req, res) => {
+  try {
+    const order = await Order.findOne({ 
+      _id: req.params.id, 
+      user: req.user.id 
+    });
+    
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (order.orderStatus !== 'Processing') {
+      return res.status(400).json({ error: 'Order cannot be cancelled' });
+    }
+    
+    // Restore product stock
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity }
+      });
+    }
+    
+    order.orderStatus = 'Cancelled';
+    await order.save();
+    
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
+
