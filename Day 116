@@ -1,0 +1,490 @@
+GNDEC College Mess Management System
+Development Diary: Days 8-15 Combined
+Department: Computer Science & Engineering
+WEEK 2: CORE SYSTEM DEVELOPMENT (DAYS 8-15)
+DAY 8: Login Page UI Design
+Date: [Date]
+Objective: Create intuitive and responsive login interface
+Activities:
+
+Design Phase:
+
+Created wireframe for login page layout
+
+Selected color scheme matching GNDEC branding (Blue and White)
+
+Designed responsive layout using Bootstrap 5 grid system
+
+Implementation:
+
+html
+<!-- Login Page Structure -->
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-4">
+            <div class="card shadow-lg">
+                <div class="card-header text-center bg-primary text-white">
+                    <h4><i class="fas fa-utensils"></i> GNDEC Mess System</h4>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm" method="POST" action="auth/login.php">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="manager">Mess Manager</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+Features Added:
+
+Responsive design for all devices
+
+Form validation with visual feedback
+
+Loading animation on submit
+
+Error message display area
+
+Remember me functionality (optional)
+
+CSS Enhancements:
+
+css
+/* Custom Login Styles */
+.min-vh-100 { min-height: 100vh; }
+.login-card {
+    border-radius: 15px;
+    border: 2px solid #0d6efd;
+}
+.login-bg {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+Completion Status: ✅ Login UI ready with responsive design
+
+DAY 9: Login Backend Logic
+Date: [Date]
+Objective: Implement secure authentication system
+Activities:
+
+Database Preparation:
+
+sql
+-- Updated users table structure
+ALTER TABLE users ADD COLUMN login_attempts INT DEFAULT 0;
+ALTER TABLE users ADD COLUMN last_login DATETIME;
+ALTER TABLE users ADD COLUMN account_locked BOOLEAN DEFAULT FALSE;
+Login Logic Implementation:
+
+php
+<?php
+// auth/login.php
+session_start();
+require_once '../config/database.php';
+
+// Prevent brute force attacks
+function checkLoginAttempts($username, $conn) {
+    $query = "SELECT login_attempts FROM users WHERE username = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if($result->num_rows == 1) {
+        $user = $result->fetch_assoc();
+        return $user['login_attempts'] >= 5; // Lock after 5 attempts
+    }
+    return false;
+}
+
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = $_POST['password'];
+    $role = $_POST['role'];
+    
+    // Check if account is locked
+    if(checkLoginAttempts($username, $conn)) {
+        $_SESSION['error'] = "Account locked. Contact administrator.";
+        header("Location: ../index.php");
+        exit();
+    }
+    
+    // Validate credentials
+    $query = "SELECT * FROM users WHERE username = ? AND role = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $username, $role);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if($result->num_rows == 1) {
+        $user = $result->fetch_assoc();
+        
+        if(password_verify($password, $user['password'])) {
+            // Reset login attempts
+            $resetQuery = "UPDATE users SET login_attempts = 0, 
+                          last_login = NOW() WHERE id = ?";
+            $resetStmt = $conn->prepare($resetQuery);
+            $resetStmt->bind_param("i", $user['id']);
+            $resetStmt->execute();
+            
+            // Set session variables
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['hostel_id'] = $user['hostel_id'];
+            $_SESSION['login_time'] = time();
+            
+            // Redirect based on role
+            switch($user['role']) {
+                case 'super_admin':
+                    header("Location: ../dashboards/super_admin/index.php");
+                    break;
+                case 'manager':
+                    header("Location: ../dashboards/manager/index.php");
+                    break;
+            }
+            exit();
+        } else {
+            // Increment failed attempts
+            $updateQuery = "UPDATE users SET login_attempts = login_attempts + 1 
+                           WHERE username = ?";
+            $updateStmt = $conn->prepare($updateQuery);
+            $updateStmt->bind_param("s", $username);
+            $updateStmt->execute();
+            
+            $_SESSION['error'] = "Invalid credentials. Attempts remaining: " . 
+                                (5 - ($user['login_attempts'] + 1));
+        }
+    } else {
+        $_SESSION['error'] = "User not found";
+    }
+}
+header("Location: ../index.php");
+?>
+Logout Implementation:
+
+php
+<?php
+// auth/logout.php
+session_start();
+session_destroy();
+header("Location: ../index.php");
+exit();
+?>
+Security Features Implemented:
+
+✅ Password hashing with bcrypt
+
+✅ SQL injection prevention using prepared statements
+
+✅ Brute force protection with attempt limiting
+
+✅ Session management
+
+✅ Account locking mechanism
+
+DAY 10: Role Based Access Control
+Date: [Date]
+Objective: Implement secure multi-level access control
+Activities:
+
+Middleware Creation:
+
+php
+<?php
+// includes/check_auth.php
+session_start();
+
+// Session timeout (30 minutes)
+$timeout = 1800; // 30 minutes in seconds
+if(isset($_SESSION['login_time'])) {
+    $session_life = time() - $_SESSION['login_time'];
+    if($session_life > $timeout) {
+        session_destroy();
+        header("Location: ../auth/login.php?expired=1");
+        exit();
+    }
+    $_SESSION['login_time'] = time(); // Reset timer
+}
+
+// Check if user is logged in
+if(!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+    header("Location: ../auth/login.php");
+    exit();
+}
+
+// Define accessible pages for each role
+$role_pages = [
+    'super_admin' => [
+        'index.php', 'hostels.php', 'managers.php', 
+        'reports.php', 'students.php', 'settings.php'
+    ],
+    'manager' => [
+        'index.php', 'daily_entry.php', 'billing.php', 
+        'reports.php', 'students.php', 'profile.php'
+    ]
+];
+
+// Get current page
+$current_page = basename($_SERVER['PHP_SELF']);
+
+// Check if current page is accessible for user role
+if(!in_array($current_page, $role_pages[$_SESSION['role']])) {
+    header("Location: ../dashboards/{$_SESSION['role']}/index.php?access=denied");
+    exit();
+}
+?>
+Dashboard Redirection Logic:
+
+php
+<?php
+// dashboards/super_admin/index.php
+require_once '../../includes/check_auth.php';
+require_once '../../includes/header.php';
+
+// Get dashboard statistics
+$stats = [
+    'total_hostels' => getTotalHostels($conn),
+    'active_managers' => getActiveManagers($conn),
+    'total_students' => getTotalStudents($conn),
+    'today_meals' => getTodayMeals($conn)
+];
+?>
+Navigation Menu Based on Role:
+
+php
+<?php
+// Function to generate navigation based on role
+function generateNavigation($role) {
+    $nav_items = [];
+    
+    if($role == 'super_admin') {
+        $nav_items = [
+            ['icon' => 'fas fa-tachometer-alt', 'text' => 'Dashboard', 'link' => 'index.php'],
+            ['icon' => 'fas fa-building', 'text' => 'Hostels', 'link' => 'hostels.php'],
+            ['icon' => 'fas fa-users-cog', 'text' => 'Managers', 'link' => 'managers.php'],
+            ['icon' => 'fas fa-chart-bar', 'text' => 'Reports', 'link' => 'reports.php'],
+            ['icon' => 'fas fa-cog', 'text' => 'Settings', 'link' => 'settings.php']
+        ];
+    } else {
+        $nav_items = [
+            ['icon' => 'fas fa-tachometer-alt', 'text' => 'Dashboard', 'link' => 'index.php'],
+            ['icon' => 'fas fa-calendar-day', 'text' => 'Daily Entry', 'link' => 'daily_entry.php'],
+            ['icon' => 'fas fa-file-invoice-dollar', 'text' => 'Billing', 'link' => 'billing.php'],
+            ['icon' => 'fas fa-chart-pie', 'text' => 'Reports', 'link' => 'reports.php'],
+            ['icon' => 'fas fa-user', 'text' => 'Profile', 'link' => 'profile.php']
+        ];
+    }
+    
+    foreach($nav_items as $item) {
+        echo "<a href='{$item['link']}' class='nav-link'>
+                <i class='{$item['icon']}'></i>
+                <span>{$item['text']}</span>
+              </a>";
+    }
+}
+?>
+Access Control Features:
+
+✅ Role-based page restrictions
+
+✅ Session timeout management
+
+✅ Dynamic navigation generation
+
+✅ Secure dashboard redirection
+
+✅ Unauthorized access prevention
+
+DAY 11: Super Admin Dashboard
+Date: [Date]
+Objective: Create comprehensive administration interface
+Activities:
+
+Dashboard Layout Design:
+
+html
+<!-- Super Admin Dashboard Structure -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-md-block bg-dark sidebar">
+            <div class="sidebar-sticky pt-3">
+                <div class="text-center mb-4">
+                    <img src="../assets/images/gndec_logo.png" alt="GNDEC" width="80">
+                    <h6 class="text-white mt-2">Super Admin Panel</h6>
+                </div>
+                <?php generateNavigation('super_admin'); ?>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="col-md-10 ml-sm-auto px-4">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between flex-wrap border-bottom py-3">
+                <h3>Dashboard Overview</h3>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" 
+                            data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> <?php echo $_SESSION['username']; ?>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="profile.php">
+                            <i class="fas fa-user-cog"></i> Profile
+                        </a>
+                        <a class="dropdown-item" href="../auth/logout.php">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5><i class="fas fa-building"></i> Hostels</h5>
+                            <h2><?php echo $stats['total_hostels']; ?></h2>
+                            <a href="hostels.php" class="text-white">View All →</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Additional cards for Managers, Students, etc. -->
+            </div>
+            
+            <!-- Recent Activity Table -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Activity</th>
+                                        <th>User</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activityTable">
+                                    <!-- AJAX loaded content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+Dashboard Statistics Functions:
+
+php
+<?php
+// Dashboard helper functions
+function getTotalHostels($conn) {
+    $query = "SELECT COUNT(*) as total FROM hostels WHERE status = 'active'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total'];
+}
+
+function getActiveManagers($conn) {
+    $query = "SELECT COUNT(*) as total FROM users 
+              WHERE role = 'manager' AND account_locked = 0";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total'];
+}
+
+function getTotalStudents($conn) {
+    $query = "SELECT COUNT(*) as total FROM students WHERE status = 'active'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total'];
+}
+
+function getTodayMeals($conn) {
+    $today = date('Y-m-d');
+    $query = "SELECT COUNT(*) as total FROM student_meal_details 
+              WHERE meal_date = '$today'";
+    $result = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($result);
+    return $row['total'];
+}
+?>
+Real-time Updates with AJAX:
+
+javascript
+// Update dashboard statistics every 30 seconds
+function updateDashboardStats() {
+    fetch('ajax/get_dashboard_stats.php')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalHostels').innerText = data.total_hostels;
+            document.getElementById('activeManagers').innerText = data.active_managers;
+            document.getElementById('totalStudents').innerText = data.total_students;
+            document.getElementById('todayMeals').innerText = data.today_meals;
+        });
+}
+
+setInterval(updateDashboardStats, 30000);
+Dashboard Features:
+
+✅ Real-time statistics display
+
+✅ Activity log tracking
+
+✅ Responsive sidebar navigation
+
+✅ User profile management
+
+✅ Auto-refresh statistics
+
+DAY 12: Hostel Management Module
+Date: [Date]
+Objective: Implement hostel CRUD operations
+Activities:
+
+Database Table Structure:
+
+sql
+CREATE TABLE hostels (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    hostel_name VARCHAR(100) NOT NULL,
+    hostel_code VARCHAR(10) UNIQUE NOT NULL,
+    total_rooms INT DEFAULT 0,
+    occupied_rooms INT DEFAULT 0,
+    mess_capacity INT NOT NULL,
+    warden_name VARCHAR(100),
+    contact_number VARCHAR(15),
+    email VARCHAR(100),
+    address TEXT,
+    status ENUM('active', 'inactive', 'maintenance') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_hostel_code (hostel_code)
+);
+

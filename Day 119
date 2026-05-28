@@ -1,0 +1,143 @@
+Manager Dashboard Design
+Date: [Date]
+Objective: Create efficient dashboard for mess managers
+Activities:
+
+Manager Dashboard Layout:
+
+php
+<?php
+// dashboards/manager/index.php
+require_once '../../includes/check_auth.php';
+
+// Get manager-specific statistics
+$manager_stats = getManagerStatistics($conn, $_SESSION['user_id']);
+$today_date = date('Y-m-d');
+$today_meals = getTodayMealsByHostel($conn, $_SESSION['hostel_id'], $today_date);
+?>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Manager Sidebar -->
+        <nav class="col-md-2 d-md-block bg-primary sidebar">
+            <div class="sidebar-sticky pt-3">
+                <div class="text-center mb-4">
+                    <h6 class="text-white">
+                        <i class="fas fa-user-tie"></i><br>
+                        Manager Panel
+                    </h6>
+                    <small class="text-light">
+                        <?php echo getHostelName($conn, $_SESSION['hostel_id']); ?>
+                    </small>
+                </div>
+                <?php generateNavigation('manager'); ?>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="col-md-10 ml-sm-auto px-4">
+            <!-- Quick Stats -->
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5>Today's Meals</h5>
+                            <h2><?php echo $today_meals['total']; ?></h2>
+                            <small>Breakfast: <?php echo $today_meals['breakfast']; ?> | 
+                                   Lunch: <?php echo $today_meals['lunch']; ?> | 
+                                   Dinner: <?php echo $today_meals['dinner']; ?></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5>Monthly Total</h5>
+                            <h2>₹<?php echo $manager_stats['monthly_revenue']; ?></h2>
+                            <small><?php echo date('F Y'); ?></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h5>Pending Bills</h5>
+                            <h2><?php echo $manager_stats['pending_bills']; ?></h2>
+                            <small>Amount: ₹<?php echo $manager_stats['pending_amount']; ?></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <h5>Total Students</h5>
+                            <h2><?php echo $manager_stats['total_students']; ?></h2>
+                            <small>Active in hostel</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <a href="daily_entry.php" class="btn btn-primary btn-lg w-100 py-3">
+                                        <i class="fas fa-calendar-day fa-2x"></i><br>
+                                        Daily Entry
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="billing.php" class="btn btn-success btn-lg w-100 py-3">
+                                        <i class="fas fa-file-invoice-dollar fa-2x"></i><br>
+                                        Generate Bills
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="students.php" class="btn btn-info btn-lg w-100 py-3">
+                                        <i class="fas fa-users fa-2x"></i><br>
+                                        Student List
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="reports.php" class="btn btn-warning btn-lg w-100 py-3">
+                                        <i class="fas fa-chart-pie fa-2x"></i><br>
+                                        View Reports
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Today's Meal Summary -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5>Today's Meal Summary (<?php echo date('d-m-Y'); ?>)</h5>
+                            <button class="btn btn-sm btn-primary" onclick="refreshMealSummary()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="mealSummary">
+                                <!-- AJAX loaded meal summary -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

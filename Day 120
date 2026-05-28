@@ -1,0 +1,76 @@
+Username Availability Check (AJAX):
+
+javascript
+function checkUsernameAvailability(username) {
+    if(username.length < 3) return;
+    
+    fetch('ajax/check_username.php?username=' + username)
+        .then(response => response.json())
+        .then(data => {
+            const feedback = document.getElementById('usernameFeedback');
+            if(data.available) {
+                feedback.textContent = 'Username is available';
+                feedback.className = 'valid-feedback';
+            } else {
+                feedback.textContent = 'Username already taken';
+                feedback.className = 'invalid-feedback';
+            }
+        });
+}
+Manager Listing with Actions:
+
+php
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Hostel</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach($managers as $manager): ?>
+        <tr>
+            <td><?php echo $manager['id']; ?></td>
+            <td><?php echo htmlspecialchars($manager['full_name']); ?></td>
+            <td><?php echo $manager['username']; ?></td>
+            <td><?php echo getHostelName($conn, $manager['hostel_id']); ?></td>
+            <td>
+                <span class="badge bg-<?php echo $manager['account_locked'] ? 'danger' : 'success'; ?>">
+                    <?php echo $manager['account_locked'] ? 'Locked' : 'Active'; ?>
+                </span>
+            </td>
+            <td><?php echo $manager['last_login'] ? date('d-m-Y H:i', strtotime($manager['last_login'])) : 'Never'; ?></td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="resetPassword(<?php echo $manager['id']; ?>)">
+                    <i class="fas fa-key"></i>
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="editManager(<?php echo $manager['id']; ?>)">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-<?php echo $manager['account_locked'] ? 'success' : 'danger'; ?>"
+                        onclick="toggleManagerStatus(<?php echo $manager['id']; ?>, <?php echo $manager['account_locked']; ?>)">
+                    <i class="fas fa-<?php echo $manager['account_locked'] ? 'unlock' : 'lock'; ?>"></i>
+                </button>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+Manager Module Features:
+
+✅ Secure account creation with temporary passwords
+
+✅ Automatic email notifications
+
+✅ Username availability checking
+
+✅ Account lock/unlock functionality
+
+✅ Password reset capabilities
+
+✅ Hostel assignment management
