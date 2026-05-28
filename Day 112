@@ -1,0 +1,30 @@
+Project Folder Structure
+
+Objective: Organize project files systematically
+Activities:
+
+Created hierarchical folder structure:
+
+text
+gndec-mess-system/
+├── auth/
+│   ├── login.php
+│   └── logout.php
+├── config/
+│   └── database.php
+├── dashboards/
+│   ├── super_admin/
+│   └── manager/
+├── assets/
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── vendor/
+├── includes/
+├── modules/
+└── index.php
+Established naming conventions
+
+Created README.md with setup instructions
+
+Initialized Git repository

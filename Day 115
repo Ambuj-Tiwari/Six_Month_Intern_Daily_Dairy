@@ -1,0 +1,36 @@
+ Login Page UI Design
+Date: [Date]
+Objective: Create user-friendly login interface
+Activities:
+
+Designed login page using Bootstrap 5
+
+Implemented responsive design:
+
+Mobile-first approach
+
+Flexbox layout
+
+Added GNDEC branding elements
+
+Created form validation using JavaScript
+
+Designed login card with:
+
+College logo
+
+Username/Password fields
+
+Role selection dropdown
+
+Submit button
+
+Error message display area
+
+Features:
+
+Responsive on all devices
+
+Clean and professional appearance
+
+Client-side validation

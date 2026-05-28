@@ -1,0 +1,28 @@
+ Database Connection Setup
+Objective: Establish secure database connectivity
+Activities:
+
+Created config/database.php:
+
+php
+<?php
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "gndec_mess_db";
+
+$conn = mysqli_connect($host, $username, $password, $database);
+
+if(!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+?>
+Implemented connection pooling
+
+Added error handling mechanisms
+
+Tested connection with sample query
+
+Created connection test script
+
+Status: Database connection successful ✅

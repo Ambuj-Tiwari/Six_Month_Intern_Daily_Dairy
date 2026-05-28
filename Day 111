@@ -1,0 +1,32 @@
+ Database Creation
+Objective: Implement database schema in MySQL
+Activities:
+
+Created database: gndec_mess_db
+
+Executed SQL scripts for table creation:
+
+sql
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(255),
+    role ENUM('super_admin', 'manager'),
+    hostel_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+Created all planned tables with proper constraints
+
+Inserted sample data for testing:
+
+5 hostels
+
+50 sample students
+
+2 admin users
+
+Tested relationships and foreign key constraints
+
+Database Status: ✅ Operational
+
+
