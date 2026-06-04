@@ -1,0 +1,38 @@
+Database ConnectiDay 1-2: Understanding Requirements
+**Concept:** Requirement Analysis, MVC Architecture  
+**Learning:**
+- Understanding e-commerce core features: Product catalog, Cart, Checkout, Orders
+- Planning database schema (Users, Products, Orders, Admin)
+- REST API endpoint design
+
+**Code: Project Structure**
+```
+MStore/
+├── server.js              # Express server entry point
+├── package.json           # Dependencies
+├── .env                   # Environment variables
+├── index.html             # Homepage
+├── script.js              # Frontend logic
+├── style.css             on
+**Concept:** MongoDB, Connection Pooling, Mongoose ODM  
+**Learning:**
+- MongoDB Atlas setup
+- Mongoose schemas and models
+- Connection error handling
+
+**Code: MongoDB Connection**
+```javascript
+// server.js - Day 5
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const MONGO_URI = process.env.MONGO_URI || 
+  'mongodb://localhost:27017/mstore';
+
+mongoose.connect(MONGO_URI, { 
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+})
+  .then(() => console.log('✓ Connected to MongoDB'))
+  .catch(err => console.log('✗ MongoDB failed:', err.message));
+```
