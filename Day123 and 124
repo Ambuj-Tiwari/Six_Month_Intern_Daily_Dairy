@@ -1,0 +1,42 @@
+User & Product Schema
+**Concept:** Database Design, Data Validation, Indexing  
+**Learning:**
+- Schema design principles
+- Unique constraints and validation
+- Index performance optimization
+
+**Code: Mongoose Schemas**
+```javascript
+// server.js - Day 6-7
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    lowercase: true,
+    trim: true 
+  },
+  password: { type: String, required: true },
+  phone: { type: String, unique: true, sparse: true },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  brand: String,
+  price: { type: Number, required: true },
+  originalPrice: Number,
+  image: String,
+  category: String,
+  inStock: { type: Boolean, default: true },
+  rating: { type: Number, default: 4.5 },
+  reviews: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+const Product = mongoose.model('Product', productSchema);
+```
