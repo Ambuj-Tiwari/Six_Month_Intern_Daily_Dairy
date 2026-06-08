@@ -1,0 +1,21 @@
+Day 13: Shopping Cart and Order Management
+Work Done
+
+Implemented shopping cart functionality using Local Storage and developed order management APIs. Users can add products to cart, modify quantities, and place orders.
+
+Concepts Learned
+Local Storage
+Cart Management
+Order Processing
+Checkout Flow
+Code
+function addToCart(product){
+ cart.push(product);
+ localStorage.setItem(
+   "cart",
+   JSON.stringify(cart)
+ );
+}
+Outcome
+
+Customers can manage their shopping cart and place orders successfull
