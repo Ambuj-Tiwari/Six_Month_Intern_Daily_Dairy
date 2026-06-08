@@ -1,0 +1,19 @@
+Razorpay Payment Gateway Integration
+Work Done
+
+Integrated Razorpay payment gateway for secure online payments. Created payment order generation and payment verification APIs.
+
+Concepts Learned
+Payment Gateway Integration
+Razorpay API
+Payment Verification
+Transaction Management
+Code
+const order =
+await razorpay.orders.create({
+ amount: amount * 100,
+ currency: "INR"
+});
+Outcome
+
+Customers can complete purchases securely using online payment methods.
