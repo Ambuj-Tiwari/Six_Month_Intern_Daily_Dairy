@@ -1,0 +1,18 @@
+Day 12: Product Management and Database Integration
+Work Done
+
+Created MongoDB product schema and implemented APIs for adding, updating, deleting, and retrieving mobile products. Connected frontend with backend APIs.
+
+Concepts Learned
+MongoDB CRUD Operations
+REST APIs
+Express Routing
+Mongoose Models
+Code
+app.get("/api/products", async (req,res)=>{
+ const products = await Product.find();
+ res.json(products);
+});
+Outcome
+
+Product information is dynamically fetched from MongoDB and displayed on the website.
