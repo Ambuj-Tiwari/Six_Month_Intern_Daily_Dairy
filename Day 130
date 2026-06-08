@@ -1,0 +1,19 @@
+Email Notification, Admin Panel and Deployment
+Work Done
+
+Implemented order confirmation emails using Nodemailer. Developed Admin Dashboard for product and order management. Performed testing, debugging, and project deployment preparation.
+
+Concepts Learned
+Nodemailer
+Admin Dashboard
+Deployment
+Project Testing
+Code
+await transporter.sendMail({
+ to: customerEmail,
+ subject: "Order Confirmation",
+ html: "<h2>Order Placed Successfully</h2>"
+});
+Outcome
+
+Completed the MobileStore E-Commerce Platform with authentication, product management, cart system, online payments, email notifications, and admin functionalities.
