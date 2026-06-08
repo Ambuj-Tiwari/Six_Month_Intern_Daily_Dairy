@@ -1,0 +1,19 @@
+JWT Authentication and User Management
+Work Done
+
+Implemented user login, JWT token generation, token verification, and protected routes. Developed user registration and login modules with secure authentication.
+
+Concepts Learned
+JWT Authentication
+User Authorization
+Protected Routes
+Middleware
+Code
+const token = jwt.sign(
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "1d" }
+);
+Outcome
+
+Users can securely register and login using JWT-based authentication.
